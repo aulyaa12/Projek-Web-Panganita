@@ -6,3 +6,12 @@ out
 # kunci rahasia: jangan pernah di-commit
 .env
 .env*.local
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# TypeScript build cache
+*.tsbuildinfo
+
+# TypeScript build cache
+*.tsbuildinfo
