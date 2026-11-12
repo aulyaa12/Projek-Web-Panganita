@@ -69,6 +69,8 @@ export async function simpanProfil(raw: unknown): Promise<HasilAksi<{ id: number
 
     revalidatePath("/keluarga");
     revalidatePath("/dashboard");
+    revalidatePath("/bu-nita");
+    revalidatePath("/riwayat");
     return ok({ id: data.id });
   } catch (e) {
     return gagal(pesanGalat(e));

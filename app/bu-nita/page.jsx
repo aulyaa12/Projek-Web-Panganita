@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import ChatBuNita from "@/components/chat/ChatBuNita";
 import { muatProfilSaya } from "@/lib/data/referensi";
 
+export const dynamic = "force-dynamic";
+
 export default async function HalamanBuNita() {
   const profil = await muatProfilSaya();
 
