@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { formatRegionTime } from "@/lib/regionTimezone";
+import {
+  formatRegionTime,
+  extractLocationFromText,
+} from "@/lib/regionTimezone";
 
 import {
   Play,
@@ -26,6 +29,13 @@ function formatTime(date = new Date(), location = "") {
   return formatRegionTime(date, location);
 }
 
+function formatDuration(seconds = 0) {
+  const total = Math.max(0, Math.floor(seconds));
+  const mins = Math.floor(total / 60);
+  const secs = total % 60;
+  return `${mins}:${String(secs).padStart(2, "0")}`;
+}
+
 function NitaAvatar({ small = false }) {
   return (
     <div
@@ -41,12 +51,15 @@ function NitaAvatar({ small = false }) {
 export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
+  const [profilLokasi, setProfilLokasi] = useState(lokasi);
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(true);
 
   const [listening, setListening] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [playingUserId, setPlayingUserId] = useState(null);
 
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [speakingId, setSpeakingId] = useState(null);
@@ -61,19 +74,31 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
 
   const bottomRef = useRef(null);
   const recognitionRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const mediaStreamRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const timerIntervalRef = useRef(null);
+  const recordingSecondsRef = useRef(0);
+  const liveTranscriptRef = useRef("");
+  const userAudioRef = useRef(null);
+  const createdAudioUrlsRef = useRef([]);
   const mountedRef = useRef(false);
   const speakingIdRef = useRef(null);
+
+  useEffect(() => {
+    setProfilLokasi(lokasi);
+  }, [lokasi]);
 
   // -----------------------------------------------
   // PESAN PEMBUKA
   // -----------------------------------------------
 
-  const pesanPembuka = () => ({
+  const pesanPembuka = (lok = profilLokasi) => ({
     id: "welcome",
     role: "assistant",
     content: PESAN_AWAL,
     sources: [],
-    time: formatTime(new Date(), lokasi),
+    time: formatTime(new Date(), lok),
   });
 
   // -----------------------------------------------
@@ -99,13 +124,16 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
         if (!mountedRef.current) return;
 
         const data = result.data;
+        const freshLoc =
+          typeof data.location === "string" ? data.location : lokasi;
 
+        setProfilLokasi(freshLoc);
         setConversationId(data.conversationId || null);
 
         if (data.messages?.length > 0) {
           setMessages(data.messages);
         } else {
-          setMessages([pesanPembuka()]);
+          setMessages([pesanPembuka(freshLoc)]);
         }
       } catch (err) {
         console.error("Gagal memuat chat:", err);
@@ -125,7 +153,24 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
 
     return () => {
       mountedRef.current = false;
-      recognitionRef.current?.stop();
+      if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+      try {
+        recognitionRef.current?.stop();
+      } catch {}
+      if (
+        mediaRecorderRef.current &&
+        mediaRecorderRef.current.state !== "inactive"
+      ) {
+        mediaRecorderRef.current.onstop = null;
+        mediaRecorderRef.current.stop();
+      }
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+      if (userAudioRef.current) {
+        userAudioRef.current.pause();
+        userAudioRef.current = null;
+      }
+      createdAudioUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      createdAudioUrlsRef.current = [];
       window.speechSynthesis?.cancel();
     };
   }, []);
@@ -216,6 +261,47 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
     setSpeakingId(null);
     setPaused(false);
   }, []);
+
+  const stopUserAudio = useCallback(() => {
+    if (userAudioRef.current) {
+      userAudioRef.current.pause();
+      userAudioRef.current = null;
+    }
+    setPlayingUserId(null);
+  }, []);
+
+  function toggleUserAudio(message) {
+    const audioUrl = message?.voiceNote?.audioUrl;
+    if (!audioUrl) return;
+
+    if (playingUserId === message.id) {
+      stopUserAudio();
+      return;
+    }
+
+    stopSpeech();
+    stopUserAudio();
+
+    const audio = new Audio(audioUrl);
+    userAudioRef.current = audio;
+    setPlayingUserId(message.id);
+
+    audio.onended = () => {
+      if (!mountedRef.current) return;
+      userAudioRef.current = null;
+      setPlayingUserId(null);
+    };
+    audio.onerror = () => {
+      if (!mountedRef.current) return;
+      userAudioRef.current = null;
+      setPlayingUserId(null);
+    };
+    audio.play().catch(() => {
+      if (!mountedRef.current) return;
+      userAudioRef.current = null;
+      setPlayingUserId(null);
+    });
+  }
 
   // -----------------------------------------------
   // MEMBACAKAN JAWABAN BU NITA
@@ -353,14 +439,335 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
   }
 
   // -----------------------------------------------
-  // INPUT SUARA MENJADI TRANSKRIP TEKS
+  // MENGIRIM PESAN TEKS ATAU AUDIO KE API & SUPABASE
   // -----------------------------------------------
 
-  function toggleMicrophone() {
-    if (listening) {
+  async function submitChatPayload({
+    text = "",
+    audioBase64 = "",
+    mimeType = "",
+    voiceNote = null,
+    optimisticText = "",
+  }) {
+    if ((!text && !audioBase64) || loading || historyLoading) return;
+
+    stopSpeech();
+    stopUserAudio();
+    setLoading(true);
+    setError("");
+
+    const localUserId = `user-${Date.now()}`;
+    const initialDisplayText =
+      text ||
+      optimisticText ||
+      (voiceNote?.duration
+        ? `🎙️ Pesan Suara Ibu (${voiceNote.duration})`
+        : "🎙️ Mengirim pesan suara...");
+    const detectedLoc = extractLocationFromText(initialDisplayText);
+
+    const userMessage = {
+      id: localUserId,
+      role: "user",
+      content: initialDisplayText,
+      voiceNote,
+      sources: [],
+      time: formatTime(new Date(), detectedLoc || profilLokasi),
+    };
+
+    setMessages((previous) => [...previous, userMessage]);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...(text ? { message: text } : {}),
+          ...(audioBase64 ? { audioBase64, mimeType } : {}),
+          conversationId,
+          userName: namaIbu,
+          location: profilLokasi,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Pesan gagal dikirim.");
+      }
+
+      const data = result.data;
+
+      setConversationId(data.conversationId);
+      if (typeof data.location === "string" && data.location) {
+        setProfilLokasi(data.location);
+      }
+
+      const activeLoc = data.location || profilLokasi;
+      const finalUserText =
+        data.transcript || text || optimisticText || "Pesan suara";
+      const finalUserLoc = extractLocationFromText(finalUserText);
+
+      const assistantMessage = {
+        id: String(data.assistantMessageId || `assistant-${Date.now()}`),
+        role: "assistant",
+        content: data.reply,
+        sources: data.sources || [],
+        dialect: data.dialect || null,
+        time: data.time || formatTime(new Date(), activeLoc),
+      };
+
+      setMessages((previous) =>
+        previous
+          .map((message) =>
+            message.id === localUserId
+              ? {
+                  ...message,
+                  id: String(data.userMessageId || message.id),
+                  content: finalUserText,
+                  voiceNote,
+                  time: data.time || formatTime(new Date(), finalUserLoc || activeLoc),
+                }
+              : message,
+          )
+          .concat(assistantMessage),
+      );
+
+      if (voiceEnabled) {
+        speakText(assistantMessage.content, assistantMessage.id);
+      }
+    } catch (err) {
+      console.warn("Pengiriman chat gagal:", err?.message || err);
+
+      setMessages((previous) =>
+        previous.filter((message) => message.id !== localUserId),
+      );
+
+      setError(err.message || "Tidak dapat menghubungi Bu Nita.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // -----------------------------------------------
+  // INPUT SUARA (LIVE AUTO-TEXT + REKAMAN VN)
+  // -----------------------------------------------
+
+  function clearRecordingResources() {
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    try {
       recognitionRef.current?.stop();
+    } catch {}
+    recognitionRef.current = null;
+  }
+
+  function cancelRecording() {
+    clearRecordingResources();
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
+      mediaRecorderRef.current.onstop = null;
+      mediaRecorderRef.current.stop();
+    }
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaStreamRef.current = null;
+    mediaRecorderRef.current = null;
+    audioChunksRef.current = [];
+    liveTranscriptRef.current = "";
+    recordingSecondsRef.current = 0;
+    setRecordingSeconds(0);
+    setListening(false);
+    setInput("");
+  }
+
+  function stopMediaRecording() {
+    clearRecordingResources();
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
+      mediaRecorderRef.current.stop();
+    } else {
+      mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
       setListening(false);
+      setRecordingSeconds(0);
+    }
+  }
+
+  async function toggleMicrophone() {
+    if (listening) {
+      if (mediaRecorderRef.current) {
+        stopMediaRecording();
+      } else {
+        clearRecordingResources();
+        setListening(false);
+        setRecordingSeconds(0);
+      }
       return;
+    }
+
+    stopSpeech();
+    stopUserAudio();
+    setError("");
+
+    // Prioritaskan MediaRecorder (disertai live SpeechRecognition paralel)
+    // agar teks muncul otomatis saat bicara, VN bisa diputar ulang, dan tetap jalan di semua browser.
+    if (
+      typeof window !== "undefined" &&
+      navigator.mediaDevices?.getUserMedia &&
+      typeof MediaRecorder !== "undefined"
+    ) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        mediaStreamRef.current = stream;
+
+        const preferredTypes = [
+          "audio/webm;codecs=opus",
+          "audio/webm",
+          "audio/mp4",
+          "audio/ogg;codecs=opus",
+          "audio/ogg",
+        ];
+        const supportedType =
+          preferredTypes.find((type) => MediaRecorder.isTypeSupported(type)) ||
+          "";
+
+        const recorder = supportedType
+          ? new MediaRecorder(stream, { mimeType: supportedType })
+          : new MediaRecorder(stream);
+
+        audioChunksRef.current = [];
+        liveTranscriptRef.current = "";
+        recordingSecondsRef.current = 0;
+        setRecordingSeconds(0);
+
+        recorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        // Jalankan SpeechRecognition secara paralel agar teks langsung muncul saat berbicara
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+          try {
+            const recognition = new SpeechRecognition();
+            recognition.lang = "id-ID";
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.maxAlternatives = 1;
+
+            recognition.onresult = (event) => {
+              const transcript = Array.from(event.results)
+                .map((result) => result[0]?.transcript || "")
+                .join(" ")
+                .replace(/\s+/g, " ")
+                .trim();
+
+              liveTranscriptRef.current = transcript;
+              setInput(transcript);
+            };
+
+            recognition.onerror = () => {
+              // Abaikan bila SpeechRecognition diblokir (mis. Incognito/Firefox); rekaman MediaRecorder tetap berjalan
+            };
+
+            recognitionRef.current = recognition;
+            recognition.start();
+          } catch {
+            // SpeechRecognition opsional; rekaman audio tetap berjalan
+          }
+        }
+
+        recorder.onstop = () => {
+          const recordedMime =
+            recorder.mimeType || supportedType || "audio/webm";
+          const chunks = [...audioChunksRef.current];
+          const spokenPreview = liveTranscriptRef.current.trim();
+          const finalDuration = formatDuration(
+            Math.max(1, recordingSecondsRef.current),
+          );
+
+          audioChunksRef.current = [];
+          liveTranscriptRef.current = "";
+          recordingSecondsRef.current = 0;
+          mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+          mediaStreamRef.current = null;
+          mediaRecorderRef.current = null;
+          setRecordingSeconds(0);
+          setListening(false);
+          setInput("");
+
+          const blob = new Blob(chunks, { type: recordedMime });
+
+          if (blob.size < 400) {
+            setError("Rekaman suara terlalu singkat. Silakan coba lagi.");
+            return;
+          }
+
+          const audioUrl = URL.createObjectURL(blob);
+          createdAudioUrlsRef.current.push(audioUrl);
+
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const cleanBase64 = String(reader.result || "").replace(
+              /^data:.*?;base64,/i,
+              "",
+            );
+            const cleanMime = recordedMime.split(";")[0].trim() || "audio/webm";
+            if (cleanBase64) {
+              submitChatPayload({
+                audioBase64: cleanBase64,
+                mimeType: cleanMime,
+                optimisticText: spokenPreview,
+                voiceNote: {
+                  audioUrl,
+                  duration: finalDuration,
+                },
+              });
+            }
+          };
+          reader.onerror = () => {
+            setError("Rekaman suara gagal dibaca. Silakan coba lagi.");
+          };
+          reader.readAsDataURL(blob);
+        };
+
+        mediaRecorderRef.current = recorder;
+        recorder.start(250);
+        setListening(true);
+        timerIntervalRef.current = setInterval(() => {
+          recordingSecondsRef.current += 1;
+          setRecordingSeconds(recordingSecondsRef.current);
+        }, 1000);
+        return;
+      } catch (err) {
+        clearRecordingResources();
+        mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+        mediaRecorderRef.current = null;
+        setListening(false);
+        setRecordingSeconds(0);
+
+        if (
+          err?.name === "NotAllowedError" ||
+          err?.name === "PermissionDeniedError"
+        ) {
+          setError("Izin penggunaan mikrofon belum diberikan.");
+          return;
+        }
+        // Lanjut ke fallback SpeechRecognition bila mikrofon gagal diakses lewat MediaRecorder
+      }
     }
 
     const SpeechRecognition =
@@ -368,13 +775,10 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
 
     if (!SpeechRecognition) {
       setError(
-        "Browser belum mendukung pengenalan suara. Silakan gunakan Chrome atau Edge.",
+        "Browser belum mendukung perekaman suara. Silakan gunakan browser modern atau ketik pesan.",
       );
       return;
     }
-
-    stopSpeech();
-    setError("");
 
     const recognition = new SpeechRecognition();
 
@@ -421,98 +825,30 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
   }
 
   // -----------------------------------------------
-  // MENGIRIM PESAN KE API DAN SUPABASE
+  // MENGIRIM PESAN TEKS ATAU MENGAKHIRI VN
   // -----------------------------------------------
 
   async function sendMessage(event) {
     event?.preventDefault();
 
+    if (loading || historyLoading) return;
+
+    // Jika sedang merekam VN dan tombol Kirim/Enter ditekan, akhiri rekaman dan langsung kirim VN
+    if (listening && mediaRecorderRef.current) {
+      stopMediaRecording();
+      return;
+    }
+
     const text = input.trim();
 
-    if (!text || loading || historyLoading) return;
+    if (!text) return;
 
-    recognitionRef.current?.stop();
-
+    clearRecordingResources();
     setListening(false);
-
-    stopSpeech();
-
+    setRecordingSeconds(0);
     setInput("");
-    setLoading(true);
-    setError("");
 
-    const localUserId = `user-${Date.now()}`;
-
-    const userMessage = {
-      id: localUserId,
-      role: "user",
-      content: text,
-      sources: [],
-      time: formatTime(new Date(), lokasi),
-    };
-
-    setMessages((previous) => [...previous, userMessage]);
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: text,
-          conversationId,
-          userName: namaIbu,
-          location: lokasi,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || "Pesan gagal dikirim.");
-      }
-
-      const data = result.data;
-
-      setConversationId(data.conversationId);
-
-      const assistantMessage = {
-        id: String(data.assistantMessageId || `assistant-${Date.now()}`),
-        role: "assistant",
-        content: data.reply,
-        sources: data.sources || [],
-        dialect: data.dialect || null,
-        time: data.time || formatTime(new Date(), lokasi),
-      };
-
-      setMessages((previous) =>
-        previous
-          .map((message) =>
-            message.id === localUserId
-              ? {
-                  ...message,
-                  id: String(data.userMessageId || message.id),
-                }
-              : message,
-          )
-          .concat(assistantMessage),
-      );
-
-      if (voiceEnabled) {
-        speakText(assistantMessage.content, assistantMessage.id);
-      }
-    } catch (err) {
-      console.error("Pengiriman chat gagal:", err);
-
-      setMessages((previous) =>
-        previous.filter((message) => message.id !== localUserId),
-      );
-
-      setError(err.message || "Tidak dapat menghubungi Bu Nita.");
-    } finally {
-      setLoading(false);
-    }
+    await submitChatPayload({ text });
   }
 
   // -----------------------------------------------
@@ -523,8 +859,8 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
     if (loading) return;
 
     stopSpeech();
-
-    recognitionRef.current?.stop();
+    stopUserAudio();
+    cancelRecording();
 
     setListening(false);
     setLoading(true);
@@ -726,6 +1062,47 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
                           : "rounded-bl-[5px] border border-[#E4F0E8] bg-white text-[#294A3B]"
                       }`}
                     >
+                      {isUser && message.voiceNote?.audioUrl && (
+                        <div className="mb-2.5 flex items-center gap-2.5 rounded-xl bg-white/15 px-3 py-2 text-white">
+                          <button
+                            type="button"
+                            onClick={() => toggleUserAudio(message)}
+                            aria-label={
+                              playingUserId === message.id
+                                ? "Jeda rekaman suara"
+                                : "Putar rekaman suara"
+                            }
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[#105A40] shadow-sm transition hover:bg-green-50"
+                          >
+                            {playingUserId === message.id ? (
+                              <Pause size={14} fill="currentColor" />
+                            ) : (
+                              <Play size={14} fill="currentColor" className="ml-0.5" />
+                            )}
+                          </button>
+
+                          <div className="flex flex-1 items-center gap-[3px]">
+                            {[10, 16, 8, 20, 13, 18, 9, 15, 20, 11, 16, 9].map(
+                              (h, idx) => (
+                                <span
+                                  key={idx}
+                                  className={`w-[3px] rounded-full bg-white/85 ${
+                                    playingUserId === message.id
+                                      ? "animate-pulse"
+                                      : "opacity-80"
+                                  }`}
+                                  style={{ height: `${h}px` }}
+                                />
+                              ),
+                            )}
+                          </div>
+
+                          <span className="shrink-0 text-[11px] font-semibold text-green-50">
+                            Suara Ibu • {message.voiceNote.duration}
+                          </span>
+                        </div>
+                      )}
+
                       <p className="select-text cursor-text whitespace-pre-wrap break-words text-[14px] leading-7 sm:text-sm">
                         {message.content}
                       </p>
@@ -780,15 +1157,24 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
                               Sumber informasi
                             </summary>
 
-                            <div className="mt-2 space-y-1">
+                            <div className="mt-2 space-y-1.5 rounded-xl border border-[#D4ECDD] bg-white px-3 py-2 shadow-sm">
                               {message.sources.map((source, index) => (
-                                <p key={index}>
-                                  {typeof source === "string"
-                                    ? source
-                                    : source.title ||
-                                      source.name ||
-                                      `Referensi ${index + 1}`}
-                                </p>
+                                <div key={index} className="leading-relaxed">
+                                  <p className="font-medium text-[#173D30]">
+                                    •{" "}
+                                    {typeof source === "string"
+                                      ? source
+                                      : source.title ||
+                                        source.name ||
+                                        `Referensi ${index + 1}`}
+                                  </p>
+                                  {typeof source === "object" &&
+                                    source?.source && (
+                                      <p className="pl-3 text-[11px] text-[#608B77]">
+                                        {source.source}
+                                      </p>
+                                    )}
+                                </div>
                               ))}
                             </div>
                           </details>
@@ -834,6 +1220,23 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
       {/* KOLOM INPUT CHAT */}
 
       <footer className="pointer-events-auto fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+100px)] z-40 border-t border-[#D0EBDD] bg-white/95 px-3 py-3 backdrop-blur-lg sm:px-6 sm:py-4 lg:bottom-0">
+        {listening && (
+          <div className="mx-auto mb-2 flex max-w-[850px] items-center justify-between rounded-xl border border-red-200 bg-red-50 px-3.5 py-1.5 text-xs text-red-700">
+            <div className="flex items-center gap-2 font-semibold">
+              <span className="h-2.5 w-2.5 animate-ping rounded-full bg-red-500" />
+              <span>Merekam suara • {formatDuration(recordingSeconds)}</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={cancelRecording}
+              className="rounded-lg px-2 py-0.5 font-semibold text-red-700 hover:bg-red-100"
+            >
+              ✕ Batal
+            </button>
+          </div>
+        )}
+
         <form
           onSubmit={sendMessage}
           className="mx-auto flex max-w-[850px] items-center gap-2.5"
@@ -854,7 +1257,11 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
                 }
               }}
               disabled={loading || historyLoading}
-              placeholder="Ketik pesan atau tekan mikrofon untuk bicara..."
+              placeholder={
+                listening
+                  ? "Silakan bicara (teks otomatis muncul) atau tekan kirim..."
+                  : "Ketik pesan atau tekan mikrofon untuk bicara..."
+              }
               aria-label="Tulis pesan untuk Bu Nita"
               className="pointer-events-auto min-h-[38px] max-h-24 flex-1 resize-none touch-manipulation select-text bg-transparent py-2.5 text-base text-[#294A3B] outline-none placeholder:text-[#91AA9C]"
             />
@@ -863,10 +1270,10 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
               type="button"
               onClick={toggleMicrophone}
               disabled={loading || historyLoading}
-              aria-label={listening ? "Hentikan mikrofon" : "Aktifkan mikrofon"}
+              aria-label={listening ? "Hentikan dan kirim suara" : "Aktifkan mikrofon"}
               className={`ml-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition ${
                 listening
-                  ? "bg-red-100 text-red-600"
+                  ? "animate-pulse bg-red-100 text-red-600"
                   : "text-[#176B49] hover:bg-[#E3F5E9]"
               }`}
             >
@@ -876,8 +1283,8 @@ export default function ChatBuNita({ namaIbu = "", lokasi = "" }) {
 
           <button
             type="submit"
-            disabled={!input.trim() || loading || historyLoading}
-            aria-label="Kirim pesan"
+            disabled={(!input.trim() && !listening) || loading || historyLoading}
+            aria-label={listening ? "Kirim rekaman suara" : "Kirim pesan"}
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#105A40] text-white shadow-md hover:bg-[#0A4632] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {loading ? (
