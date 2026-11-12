@@ -18,8 +18,14 @@ export async function muatProfilSaya(): Promise<ProfilKeluarga | null> {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (error) throw new Error("Profil keluarga gagal dimuat.");
-  return (data as ProfilKeluarga | null) ?? null;
+  if (error) {
+  console.error("[muatProfilSaya]", {
+    message: error.message,
+    code: error.code,
+    details: error.details,
+    hint: error.hint,
+  });
+  throw new Error(`Profil keluarga gagal dimuat: ${error.message} (${error.code})`);
 }
 
 export async function muatKebutuhanGizi(): Promise<KebutuhanGizi[]> {

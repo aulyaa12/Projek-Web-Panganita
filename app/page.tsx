@@ -1,8 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Camera, History, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/Logo";
+import { PublicNav } from "@/components/PublicNav";
+import { MulaiButton } from "@/components/MulaiButton";
 
 const FITUR = [
   {
@@ -25,14 +25,7 @@ const FITUR = [
 export default function Beranda() {
   return (
     <div className="min-h-dvh">
-      <header className="mx-auto flex h-20 max-w-6xl items-center justify-between px-5 sm:px-8">
-        <Link href="/" aria-label="Beranda PANGANITA">
-          <Logo priority />
-        </Link>
-        <Button asChild variant="outline" size="sm">
-          <Link href="/masuk">Masuk</Link>
-        </Button>
-      </header>
+      <PublicNav />
 
       <main className="mx-auto max-w-6xl px-5 pb-24 pt-8 sm:px-8 md:pt-14">
         <section className="grid items-center gap-12 md:grid-cols-2">
@@ -47,9 +40,7 @@ export default function Beranda() {
               Ketahui berapa yang perlu disimpan untuk gizi keluarga dan berapa yang bisa dijual, lalu pilih yang paling sesuai.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild size="lg" className="w-full sm:w-auto">
-                <Link href="/masuk">Mulai sekarang</Link>
-              </Button>
+              <MulaiButton />
               <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
                 <a href="#fitur">Lihat fitur</a>
               </Button>
