@@ -19,13 +19,16 @@ export async function muatProfilSaya(): Promise<ProfilKeluarga | null> {
     .maybeSingle();
 
   if (error) {
-  console.error("[muatProfilSaya]", {
-    message: error.message,
-    code: error.code,
-    details: error.details,
-    hint: error.hint,
-  });
-  throw new Error(`Profil keluarga gagal dimuat: ${error.message} (${error.code})`);
+    console.error("[muatProfilSaya]", {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+    throw new Error(`Profil keluarga gagal dimuat: ${error.message} (${error.code})`);
+  }
+
+  return (data as ProfilKeluarga | null) ?? null;
 }
 
 export async function muatKebutuhanGizi(): Promise<KebutuhanGizi[]> {
