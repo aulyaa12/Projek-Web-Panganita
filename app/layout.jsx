@@ -1,13 +1,14 @@
 import "./globals.css";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import { Toaster } from "@/components/ui/sonner";
 import { NavKondisional } from "@/components/NavKondisional";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+// Menggunakan font Plus Jakarta Sans dari file lokal.
+const plusJakartaSans = localFont({
+  src: "./fonts/PlusJakartaSans-Variable.ttf",
   variable: "--font-sans",
   display: "swap",
+  weight: "400 800",
 });
 
 export const metadata = {
