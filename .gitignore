@@ -1,0 +1,8 @@
+# dependensi dan hasil build
+node_modules
+.next
+out
+
+# kunci rahasia: jangan pernah di-commit
+.env
+.env*.local
