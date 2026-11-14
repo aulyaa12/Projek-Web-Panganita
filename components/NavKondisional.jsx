@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 
 import { AppNav } from "@/components/AppNav";
+import { PublicNav } from "@/components/PublicNav";
 import { cn } from "@/lib/utils";
 
 const HALAMAN_PUBLIK = ["/", "/masuk"];
@@ -20,7 +21,13 @@ export function NavKondisional({ children }) {
   const pathname = usePathname();
 
   if (isHalamanPublik(pathname)) {
-    return <>{children}</>;
+    return (
+      <>
+        <PublicNav />
+
+        {children}
+      </>
+    );
   }
 
   const isDashboard = pathname === "/dashboard";

@@ -53,11 +53,11 @@ export function AppNav() {
 
   return (
     <>
-      {/* Desktop navigation */}
-      <header className="sticky top-0 z-50 hidden w-full px-3 pt-3 sm:px-6 sm:pt-4 lg:block">
-        <div className="mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-3 rounded-full border border-[#e3ebe1] bg-white/95 px-3 shadow-[0_5px_25px_rgba(30,77,48,0.07)] backdrop-blur-xl sm:px-5">
+      {/* Navbar atas: tampil pada desktop dan mobile */}
+      <header className="sticky top-0 z-50 w-full px-3 pt-3 sm:px-6 sm:pt-4">
+        <div className="mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-3 rounded-full border border-[#e3ebe1] bg-white/95 px-4 shadow-[0_5px_25px_rgba(30,77,48,0.07)] backdrop-blur-xl sm:min-h-[92px] sm:px-7">
           <Link
-            href="/dashboard"
+            href="/"
             aria-label="Beranda PANGANITA"
             className="flex shrink-0 items-center rounded-full p-1 transition-transform hover:scale-[1.02] active:scale-95"
           >
@@ -67,13 +67,13 @@ export function AppNav() {
               width={2070}
               height={651}
               priority
-              className="h-9 w-auto object-contain sm:h-10"
+              className="h-11 w-auto object-contain sm:h-16 lg:h-16 xl:h-[4.5rem]"
             />
           </Link>
 
           <nav
             aria-label="Navigasi utama"
-            className="flex items-center gap-2 rounded-full bg-[#f4f7f2] p-2.5"
+            className="hidden items-center gap-1 rounded-full bg-[#f4f7f2] p-2 lg:flex xl:gap-2 xl:p-2.5"
           >
             {MENU.map((menu) => {
               const Icon = menu.icon;
@@ -85,7 +85,7 @@ export function AppNav() {
                   href={menu.href}
                   aria-current={aktif ? "page" : undefined}
                   className={cn(
-                    "inline-flex min-h-12 items-center justify-center gap-2.5 whitespace-nowrap rounded-full px-5 py-2.5 text-[16px] font-semibold transition-all duration-200",
+                    "inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2 text-sm font-semibold transition-all duration-200 xl:min-h-12 xl:gap-2.5 xl:px-5 xl:py-2.5 xl:text-base",
                     menu.isScan
                       ? aktif
                         ? "bg-[#3E8E1F] text-white shadow-md shadow-[#3E8E1F]/25"
@@ -115,28 +115,22 @@ export function AppNav() {
             title="Keluar dari akun"
             aria-label="Keluar dari akun"
             aria-busy={sedangKeluar}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-[#e1eae0] bg-white px-3.5 text-sm font-bold text-[#41634a] transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 sm:text-[15px]"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[#e1eae0] bg-white px-3.5 text-sm font-bold text-[#41634a] transition-all duration-200 hover:border-[#1B4D2B] hover:bg-[#1B4D2B] hover:text-white hover:shadow-md hover:shadow-[#1B4D2B]/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-12 sm:px-4 sm:text-base xl:min-h-14 xl:px-5"
           >
             {sedangKeluar ? (
               <span
-                className="h-[18px] w-[18px] animate-spin rounded-full border-2 border-[#41634a] border-t-transparent"
+                className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent"
                 aria-hidden="true"
               />
             ) : (
-              <LogOut
-                aria-hidden="true"
-                className="h-[18px] w-[18px]"
-              />
+              <LogOut aria-hidden="true" className="h-5 w-5" />
             )}
-
-            <span className="hidden sm:inline">
-              {sedangKeluar ? "Keluar…" : "Keluar"}
-            </span>
+            <span>{sedangKeluar ? "Keluar…" : "Keluar"}</span>
           </button>
         </div>
       </header>
 
-      {/* Mobile bottom navigation */}
+      {/* Navbar bawah mobile */}
       <nav
         aria-label="Navigasi mobile"
         className="fixed inset-x-0 bottom-0 z-50 rounded-t-[28px] border-x border-t border-[#e0e9de] bg-white/95 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-[0_-8px_35px_rgba(30,77,48,0.16)] backdrop-blur-xl lg:hidden"
@@ -152,7 +146,7 @@ export function AppNav() {
                   <Link
                     href={menu.href}
                     aria-current={aktif ? "page" : undefined}
-                    className="group flex min-h-[76px] flex-col items-center justify-end gap-1 rounded-2xl px-1 py-1.5 transition-transform duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F] focus-visible:ring-offset-2"
+                    className="group flex min-h-[76px] flex-col items-center justify-end gap-1 rounded-2xl px-1 py-1.5 transition-transform active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F] focus-visible:ring-offset-2"
                   >
                     <span
                       className={cn(
@@ -162,15 +156,8 @@ export function AppNav() {
                           : "bg-[#E6B91E] shadow-[0_10px_22px_rgba(230,185,30,0.42)] group-hover:brightness-105",
                       )}
                     >
-                      <Icon
-                        aria-hidden="true"
-                        className={cn(
-                          "h-7 w-7",
-                          aktif ? "stroke-[2.5]" : "stroke-[2.1]",
-                        )}
-                      />
+                      <Icon aria-hidden="true" className="h-7 w-7 stroke-[2.1]" />
                     </span>
-
                     <span
                       className={cn(
                         "text-[11px] font-bold leading-tight",
@@ -196,15 +183,8 @@ export function AppNav() {
                       : "text-[#718075] hover:bg-[#edf4eb] hover:text-[#1B4D2B]",
                   )}
                 >
-                  <Icon
-                    aria-hidden="true"
-                    className={cn(
-                      "h-5 w-5 shrink-0",
-                      aktif ? "stroke-[2.5]" : "stroke-[1.9]",
-                    )}
-                  />
-
-                  <span className="w-full truncate text-center text-[11px] font-semibold leading-tight sm:text-[12px]">
+                  <Icon aria-hidden="true" className="h-5 w-5 shrink-0" />
+                  <span className="w-full truncate text-center text-[11px] font-semibold leading-tight sm:text-xs">
                     {menu.label}
                   </span>
                 </Link>
@@ -216,3 +196,5 @@ export function AppNav() {
     </>
   );
 }
+
+export default AppNav;
