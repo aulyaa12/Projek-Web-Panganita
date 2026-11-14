@@ -16,6 +16,6 @@
     "plugins": [{ "name": "next" }],
     "paths": { "@/*": ["./*"] }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/layout.jsx", "components/AppNav.jsx", "components/chat/ChatBuNita.jsx", "app/bu-nita/page.jsx", "components/NavKondisional.jsx", "app/keluarga/page.jsx", "components/ProfilForm.jsx", "app/page.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/layout.jsx", "components/AppNav.tsx", "components/chat/ChatBuNita.jsx", "app/bu-nita/page.jsx"],
   "exclude": ["node_modules"]
 }

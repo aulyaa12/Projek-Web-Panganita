@@ -14,9 +14,7 @@ import {
   muatProfilSaya,
 } from "@/lib/data/referensi";
 
-import { gagal, ok, pesanGalat, type HasilAksi } from "@/lib/aksi";
-
-import type { HasilHitung } from "@/lib/panganita/types";
+import { gagal, ok, pesanGalat } from "@/lib/aksi";
 
 // ============================================================
 // KONFIGURASI FOTO
@@ -26,9 +24,9 @@ const BUCKET_FOTO = "hasil-panen";
 
 const MAKS_FOTO_BYTE = 10 * 1024 * 1024;
 
-const TIPE_FOTO = ["image/jpeg", "image/png", "image/webp"] as const;
+const TIPE_FOTO = ["image/jpeg", "image/png", "image/webp"];
 
-const EKSTENSI_FOTO: Record<(typeof TIPE_FOTO)[number], string> = {
+const EKSTENSI_FOTO = {
   "image/jpeg": "jpg",
   "image/png": "png",
   "image/webp": "webp",
@@ -49,33 +47,21 @@ const fotoSchema = z
 
 const inputSchema = z.object({
   bahanId: z.number().int().positive(),
-
   beratPanenKg: z.number().positive().max(100000),
-
   hargaJualPerKg: z.number().nonnegative().max(10000000),
-
   hariDisediakan: z.number().int().min(1).max(30),
 });
 
 const simpanSchema = inputSchema.extend({
   keputusan: z.enum(["prioritas_uang", "seimbang", "prioritas_gizi"]),
-
   foto: fotoSchema,
 });
-
-type Input = z.infer<typeof inputSchema>;
-
-type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
 // ============================================================
 // VALIDASI PATH FOTO
 // ============================================================
 
-function validasiPathFoto(
-  path: string,
-  userId: string,
-  tipeMime: (typeof TIPE_FOTO)[number],
-) {
+function validasiPathFoto(path, userId, tipeMime) {
   const bagian = path.split("/");
 
   if (bagian.length !== 2 || bagian[0] !== userId) {
@@ -83,7 +69,6 @@ function validasiPathFoto(
   }
 
   const namaFile = bagian[1];
-
   const ekstensi = EKSTENSI_FOTO[tipeMime];
 
   const polaNama =
@@ -101,15 +86,11 @@ function validasiPathFoto(
 // HAPUS FOTO STORAGE
 // ============================================================
 
-async function hapusFotoStorage(
-  supabase: SupabaseServerClient,
-  path: string,
-): Promise<boolean> {
+async function hapusFotoStorage(supabase, path) {
   const { error } = await supabase.storage.from(BUCKET_FOTO).remove([path]);
 
   if (error) {
     console.error("Gagal menghapus foto dari Storage:", error);
-
     return false;
   }
 
@@ -120,11 +101,7 @@ async function hapusFotoStorage(
 // VERIFIKASI FOTO STORAGE
 // ============================================================
 
-async function verifikasiFotoStorage(
-  supabase: SupabaseServerClient,
-  path: string,
-  userId: string,
-) {
+async function verifikasiFotoStorage(supabase, path, userId) {
   const { data: daftarFile, error } = await supabase.storage
     .from(BUCKET_FOTO)
     .list(userId, {
@@ -152,10 +129,7 @@ async function verifikasiFotoStorage(
 // PERHITUNGAN SERVER
 // ============================================================
 
-// Semua angka dihitung ulang di server.
-// Browser tidak dipercaya sebagai sumber hasil perhitungan.
-
-async function jalankanHitung(input: Input) {
+async function jalankanHitung(input) {
   const profil = await muatProfilSaya();
 
   if (!profil) {
@@ -177,11 +151,8 @@ async function jalankanHitung(input: Input) {
     kebutuhan,
     bahan,
     aturan,
-
     beratPanenKg: input.beratPanenKg,
-
     hargaJualPerKg: input.hargaJualPerKg,
-
     hariDisediakan: input.hariDisediakan,
   });
 
@@ -197,9 +168,7 @@ async function jalankanHitung(input: Input) {
 // AMBIL ALTERNATIF PEMBAGIAN PANEN
 // ============================================================
 
-export async function ambilAlternatif(
-  raw: unknown,
-): Promise<HasilAksi<HasilHitung>> {
+export async function ambilAlternatif(raw) {
   try {
     const input = inputSchema.parse(raw);
 
@@ -217,34 +186,22 @@ export async function ambilAlternatif(
 // SIMPAN PANEN, FOTO, DAN KEPUTUSAN
 // ============================================================
 
-export async function simpanKeputusan(
-  raw: unknown,
-): Promise<HasilAksi<{ riwayatId: number }>> {
-  let pathFoto: string | null = null;
+export async function simpanKeputusan(raw) {
+  let pathFoto = null;
+  let supabase = null;
 
-  let supabase: SupabaseServerClient | null = null;
-
-  // Jika penghapusan data panen gagal,
-  // foto harus dipertahankan.
   let pertahankanFoto = false;
-
-  // Menandai apakah seluruh data sudah tersimpan.
   let keputusanTersimpan = false;
-
-  let riwayatIdTersimpan: number | null = null;
+  let riwayatIdTersimpan = null;
 
   try {
-    // --------------------------------------------------------
     // 1. VALIDASI INPUT
-    // --------------------------------------------------------
 
     const input = simpanSchema.parse(raw);
 
     supabase = await createClient();
 
-    // --------------------------------------------------------
     // 2. VERIFIKASI PENGGUNA
-    // --------------------------------------------------------
 
     const {
       data: { user },
@@ -257,34 +214,25 @@ export async function simpanKeputusan(
       );
     }
 
-    // --------------------------------------------------------
-    // 3. VALIDASI FOTO SEBELUM PERHITUNGAN
-    // --------------------------------------------------------
+    // 3. VALIDASI FOTO
 
     const foto = input.foto ?? null;
 
     if (foto) {
       validasiPathFoto(foto.path, user.id, foto.tipeMime);
 
-      // Catat path agar bisa dibersihkan
-      // apabila proses berikutnya gagal.
       pathFoto = foto.path;
     }
 
-    // --------------------------------------------------------
     // 4. HITUNG ULANG KEBUTUHAN GIZI
-    // --------------------------------------------------------
 
     const { profil, aturan, bahan, hasil } = await jalankanHitung(input);
 
-    // Pastikan profil milik pengguna login.
     if (profil.user_id !== user.id) {
       throw new KesalahanHitung("Profil keluarga tidak sesuai dengan akun.");
     }
 
-    // --------------------------------------------------------
     // 5. CARI ALTERNATIF YANG DIPILIH
-    // --------------------------------------------------------
 
     const pilihan = hasil.alternatif.find(
       (a) => a.keputusan === input.keputusan,
@@ -294,33 +242,23 @@ export async function simpanKeputusan(
       throw new KesalahanHitung("Pilihan tidak tersedia untuk panen ini.");
     }
 
-    // --------------------------------------------------------
-    // 6. VERIFIKASI FOTO DI SUPABASE STORAGE
-    // --------------------------------------------------------
+    // 6. VERIFIKASI FOTO DI STORAGE
 
     if (foto) {
       await verifikasiFotoStorage(supabase, foto.path, user.id);
     }
 
-    // --------------------------------------------------------
     // 7. SIMPAN DATA PANEN
-    // --------------------------------------------------------
 
     const { data: panen, error: errPanen } = await supabase
       .from("panen")
       .insert({
         profil_id: profil.id,
-
         bahan_id: bahan.id,
-
         path_foto: foto?.path ?? null,
-
         tipe_mime: foto?.tipeMime ?? null,
-
         ukuran_byte: foto?.ukuranByte ?? null,
-
         berat_kg: input.beratPanenKg,
-
         harga_jual_per_kg: input.hargaJualPerKg,
       })
       .select("id")
@@ -332,64 +270,40 @@ export async function simpanKeputusan(
       throw new KesalahanHitung("Data panen gagal disimpan.");
     }
 
-    // --------------------------------------------------------
     // 8. SIMPAN SNAPSHOT KEPUTUSAN
-    // --------------------------------------------------------
 
     const { data: riwayat, error: errRiwayat } = await supabase
       .from("riwayat_keputusan")
       .insert({
         profil_id: profil.id,
-
         panen_id: panen.id,
-
         versi_rumus: aturan.versi,
-
         nama_bahan: bahan.nama,
-
         jumlah_orang: hasil.jumlahOrang,
-
         berat_panen_kg: input.beratPanenKg,
-
         harga_jual_per_kg: input.hargaJualPerKg,
-
         hari_disediakan: input.hariDisediakan,
-
         akg_energi_kkal: hasil.akgEnergiKkal,
-
         akg_protein_g: hasil.akgProteinG,
-
         kebutuhan_cadangan_kg: hasil.kebutuhanCadanganKg,
-
         kekurangan_kg: hasil.kekuranganKg,
-
         keputusan: pilihan.keputusan,
-
         berat_simpan_kg: pilihan.beratSimpanKg,
-
         berat_jual_kg: pilihan.beratJualKg,
-
         pendapatan_rp: pilihan.pendapatanRp,
-
         kontribusi_energi_persen: pilihan.kontribusiEnergiPersen,
-
         kontribusi_protein_persen: pilihan.kontribusiProteinPersen,
-
         sisa_energi_kkal: pilihan.sisaEnergiKkal,
-
         sisa_protein_g: pilihan.sisaProteinG,
       })
       .select("id")
       .single();
 
-    // --------------------------------------------------------
     // 9. PENANGANAN JIKA RIWAYAT GAGAL
-    // --------------------------------------------------------
 
     if (errRiwayat || !riwayat) {
       console.error("Gagal menyimpan riwayat:", errRiwayat);
 
-      // Coba hapus data panen yang sudah terlanjur tersimpan.
       const { error: errHapusPanen } = await supabase
         .from("panen")
         .delete()
@@ -398,12 +312,8 @@ export async function simpanKeputusan(
       if (errHapusPanen) {
         console.error("Gagal menghapus data panen:", errHapusPanen);
 
-        // Jangan hapus foto jika data panen
-        // masih mungkin mereferensikannya.
         pertahankanFoto = true;
       } else if (pathFoto) {
-        // Data panen berhasil dihapus.
-        // Sekarang foto boleh dibersihkan.
         const fotoTerhapus = await hapusFotoStorage(supabase, pathFoto);
 
         if (fotoTerhapus) {
@@ -414,48 +324,33 @@ export async function simpanKeputusan(
       throw new KesalahanHitung("Riwayat keputusan gagal disimpan.");
     }
 
-    // --------------------------------------------------------
     // 10. TANDAI PENYIMPANAN BERHASIL
-    // --------------------------------------------------------
 
     keputusanTersimpan = true;
-
     riwayatIdTersimpan = riwayat.id;
 
-    // --------------------------------------------------------
     // 11. PERBARUI HALAMAN
-    // --------------------------------------------------------
 
     try {
       revalidatePath("/riwayat");
-
       revalidatePath("/dashboard");
-
       revalidatePath("/pindai");
     } catch (error) {
-      // Jangan menganggap transaksi gagal
-      // jika database sudah berhasil menyimpan data.
       console.error("Gagal memperbarui cache halaman:", error);
     }
 
-    // --------------------------------------------------------
     // 12. KEMBALIKAN HASIL
-    // --------------------------------------------------------
 
     return ok({
       riwayatId: riwayat.id,
     });
   } catch (e) {
-    // --------------------------------------------------------
     // 13. PEMBERSIHAN FOTO JIKA PROSES GAGAL
-    // --------------------------------------------------------
 
     if (!keputusanTersimpan && supabase && pathFoto && !pertahankanFoto) {
       await hapusFotoStorage(supabase, pathFoto);
     }
 
-    // Jika data ternyata sudah tersimpan,
-    // jangan mengirim status gagal kepada browser.
     if (keputusanTersimpan && riwayatIdTersimpan !== null) {
       return ok({
         riwayatId: riwayatIdTersimpan,
