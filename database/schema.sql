@@ -246,7 +246,7 @@ CREATE TABLE IF NOT EXISTS public.pesan_chat (
     isi TEXT NOT NULL
         CHECK (char_length(isi) BETWEEN 1 AND 8000),
     sumber_rujukan JSONB,                        -- Sumber halaman buku panduan RAG
-    model_versi TEXT,                            -- Gemini 2.5 Flash / fallback
+    model_versi TEXT,                            -- Gemini 3.5 Flash / fallback
     dibuat_pada TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
