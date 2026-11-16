@@ -1,7 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import { Camera, History, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PublicNav } from "@/components/PublicNav";
 import { MulaiButton } from "@/components/MulaiButton";
 
 const FITUR = [
@@ -25,8 +26,6 @@ const FITUR = [
 export default function Beranda() {
   return (
     <div className="min-h-dvh">
-      <PublicNav />
-
       <main className="mx-auto max-w-6xl px-5 pb-24 pt-8 sm:px-8 md:pt-14">
         <section className="grid items-center gap-12 md:grid-cols-2">
           <div className="space-y-6">

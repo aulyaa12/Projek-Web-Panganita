@@ -5,7 +5,7 @@ export default async function HalamanKeluarga() {
   const profil = await muatProfilSaya();
 
   return (
-    <main className="space-y-6">
+    <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       <header>
         <p className="text-sm text-stone-600">Profil keluarga</p>
         <h1 className="text-2xl font-bold text-emerald-950">

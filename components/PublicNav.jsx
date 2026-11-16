@@ -7,22 +7,22 @@ import { LayoutDashboard, LogIn, LogOut } from "lucide-react";
 
 import { useAuthStatus } from "@/components/useAuthStatus";
 
-// Navbar halaman publik (beranda "/"). Tombol berubah sesuai status login.
+// Navbar halaman publik ("/" dan "/masuk"). Tombol berubah sesuai status login.
 export function PublicNav() {
   const router = useRouter();
   const { status, supabase } = useAuthStatus();
 
-  async function keluar(): Promise<void> {
+  async function keluar() {
     await supabase.auth.signOut();
     router.refresh();
   }
 
   const tombolUtama =
-    "inline-flex min-h-12 items-center justify-center gap-2.5 rounded-full bg-[#2e7045] px-6 text-base font-bold text-white shadow-md shadow-[#2e7045]/20 transition-all duration-200 hover:bg-[#245a37] active:scale-95 sm:min-h-14 sm:px-8 sm:text-lg";
+    "inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[#2e7045] px-4 text-sm font-bold text-white shadow-md shadow-[#2e7045]/20 transition-all duration-200 hover:bg-[#245a37] active:scale-95 sm:min-h-14 sm:px-8 sm:text-lg";
 
   return (
     <header className="sticky top-0 z-50 w-full px-3 pt-3 sm:px-6 sm:pt-4">
-      <div className="mx-auto flex min-h-[84px] max-w-6xl items-center justify-between gap-3 rounded-full border border-[#e3ebe1] bg-white/95 px-4 shadow-[0_5px_25px_rgba(30,77,48,0.07)] backdrop-blur-xl sm:min-h-[96px] sm:px-7">
+      <div className="mx-auto flex min-h-[76px] max-w-6xl items-center justify-between gap-2 rounded-full border border-[#e3ebe1] bg-white/95 px-3.5 shadow-[0_5px_25px_rgba(30,77,48,0.07)] backdrop-blur-xl sm:min-h-[96px] sm:gap-3 sm:px-7">
         <Link
           href="/"
           aria-label="Beranda PANGANITA"
@@ -34,19 +34,22 @@ export function PublicNav() {
             width={2070}
             height={651}
             priority
-            className="h-11 w-auto object-contain sm:h-14"
+            className="h-10 w-auto object-contain sm:h-14 lg:h-16"
           />
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-3">
           {status === "loading" && (
-            <span aria-hidden className="block h-12 w-28 rounded-full bg-[#f4f7f2] sm:h-14 sm:w-36" />
+            <span
+              aria-hidden
+              className="block h-11 w-24 rounded-full bg-[#f4f7f2] sm:h-14 sm:w-36"
+            />
           )}
 
           {status === "guest" && (
             <Link href="/masuk" className={tombolUtama}>
               <LogIn className="h-5 w-5" />
-              Masuk
+              <span>Masuk</span>
             </Link>
           )}
 
@@ -56,15 +59,16 @@ export function PublicNav() {
                 <LayoutDashboard className="h-5 w-5" />
                 <span>Ke Dashboard</span>
               </Link>
+
               <button
                 type="button"
                 onClick={keluar}
                 aria-label="Keluar dari akun"
                 title="Keluar dari akun"
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-[#e1eae0] bg-white px-4 text-base font-bold text-[#41634a] transition-all duration-200 hover:border-red-200 hover:bg-red-50 hover:text-red-600 active:scale-95 sm:min-h-14 sm:px-5"
+                className="inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[#e1eae0] bg-white px-3.5 text-sm font-bold text-[#41634a] transition-all duration-200 hover:border-[#1B4D2B] hover:bg-[#1B4D2B] hover:text-white hover:shadow-md hover:shadow-[#1B4D2B]/20 active:scale-95 sm:min-h-14 sm:px-5"
               >
                 <LogOut className="h-5 w-5" />
-                <span className="hidden sm:inline">Keluar</span>
+                <span>Keluar</span>
               </button>
             </>
           )}
@@ -73,3 +77,5 @@ export function PublicNav() {
     </header>
   );
 }
+
+export default PublicNav;
