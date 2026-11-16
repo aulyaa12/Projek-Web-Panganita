@@ -46,13 +46,17 @@ export function NavKondisional({ children }) {
 
         {children}
 
-        {/* Footer tidak tampil di halaman login */}
-        {!pathname.startsWith("/masuk") && !tanpaFooter(pathname) && <Footer />}
+        {/* Footer tidak tampil di halaman login.
+            Di landing page ("/") footer juga tampil di mobile,
+            supaya pengguna mobile bisa membuka Tentang Kami dst. */}
+        {!pathname.startsWith("/masuk") && !tanpaFooter(pathname) && (
+          <Footer tampilDiMobile={pathname === "/"} />
+        )}
       </>
     );
   }
 
-   // Cabang 2: halaman aplikasi (AppNav, ada bottom navbar sampai lg)
+  // Cabang 2: halaman aplikasi (AppNav, ada bottom navbar sampai lg)
   const isDashboard = pathname === "/dashboard";
 
   return (

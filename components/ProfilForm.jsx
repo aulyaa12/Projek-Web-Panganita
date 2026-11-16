@@ -11,6 +11,7 @@ import { Stepper } from "@/components/Stepper";
 import { simpanProfil } from "@/actions/profil";
 import { jumlahOrangProfil } from "@/lib/panganita/profil";
 import { DAFTAR_PROVINSI, DAFTAR_KABUPATEN_KOTA } from "@/lib/data/wilayah";
+import { AvatarProfil } from "@/components/AvatarProfil";
 
 const KELOMPOK_ANAK = [
   { kunci: "jumlah_bayi_6_11", label: "Bayi 6–11 bulan", keterangan: "Butuh ASI dan MPASI padat protein hewani" },
@@ -227,12 +228,15 @@ export function ProfilForm({ awal }) {
   return (
     <div className="space-y-6">
       <Card className="border-2 border-[#1B4D2B] rounded-xl bg-white">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold text-[#0F2D1A]">Data ibu</CardTitle>
-          <CardDescription className="text-sm text-[#1B4D2B]/80">
-            Nama ini digunakan untuk profil keluarga.
-          </CardDescription>
-        </CardHeader>
+        <CardHeader className="flex flex-row items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <CardTitle className="text-lg font-bold text-[#0F2D1A]">Data ibu</CardTitle>
+            <CardDescription className="text-sm text-[#1B4D2B]/80">
+              Nama ini digunakan untuk profil keluarga.
+            </CardDescription>
+          </div>
+        <AvatarProfil />
+      </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="nama" className="block text-sm font-semibold text-[#0F2D1A]">
