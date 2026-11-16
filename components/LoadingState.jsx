@@ -1,27 +1,18 @@
+import { LoaderCircle } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
-// Ukuran spinner. Pilih lewat prop "ukuran": "kecil" | "sedang" | "besar".
+// Ukuran ikon. Pilih lewat prop "ukuran": "kecil" | "sedang" | "besar".
 const UKURAN = {
-  kecil: {
-    spinner: "h-8 w-8",
-    garis: "border-4",
-    teks: "text-sm",
-  },
-  sedang: {
-    spinner: "h-16 w-16",
-    garis: "border-[6px]",
-    teks: "text-base",
-  },
-  besar: {
-    spinner: "h-24 w-24",
-    garis: "border-8",
-    teks: "text-lg",
-  },
+  kecil: { ikon: "h-8 w-8", teks: "text-sm" },
+  sedang: { ikon: "h-16 w-16", teks: "text-base" },
+  besar: { ikon: "h-24 w-24", teks: "text-lg" },
 };
 
 // Tampilan memuat yang bisa dipakai ulang di banyak halaman.
+// Memakai ikon LoaderCircle yang berputar
 // - pesan: teks yang terlihat oleh pengguna
-// - ukuran: ukuran spinner
+// - ukuran: ukuran ikon
 // - layarPenuh: true = mengisi tinggi layar, false = hanya sebesar isinya
 export function LoadingState({
   pesan = "Sebentar ya, Bu…",
@@ -36,29 +27,16 @@ export function LoadingState({
       role="status"
       aria-live="polite"
       className={cn(
-        "flex w-full flex-col items-center justify-center gap-5 px-4",
+        "flex w-full flex-col items-center justify-center gap-4 px-4",
         layarPenuh ? "min-h-[60dvh]" : "py-8",
         className,
       )}
     >
-      <div className={cn("relative", gaya.spinner)}>
-        {/* Jalur (track) supaya putarannya terlihat jelas di latar terang */}
-        <span
-          aria-hidden="true"
-          className={cn(
-            "absolute inset-0 rounded-full border-[#1B4D2B]/15",
-            gaya.garis,
-          )}
-        />
-        {/* Bagian yang berputar */}
-        <span
-          aria-hidden="true"
-          className={cn(
-            "absolute inset-0 animate-spin rounded-full border-transparent border-r-[#E6B91E] border-t-[#3E8E1F] motion-reduce:animate-none",
-            gaya.garis,
-          )}
-        />
-      </div>
+      <LoaderCircle
+        aria-hidden="true"
+        strokeWidth={2.5}
+        className={cn("animate-spin text-[#3E8E1F]", gaya.ikon)}
+      />
 
       <p className={cn("text-center font-semibold text-[#1B4D2B]", gaya.teks)}>
         {pesan}
