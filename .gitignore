@@ -1,17 +1,37 @@
-# dependensi dan hasil build
-node_modules
-.next
-out
 
-# kunci rahasia: jangan pernah di-commit
+# ==================================
+# NEXT.JS
+# ==================================
+node_modules/
+.next/
+out/
+
+# ==================================
+# PYTHON ENVIRONMENT
+# ==================================
+.venv/
+venv/
+**/.venv/
+**/venv/
+
+# Python cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+
+# Python testing/cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ==================================
+# ENVIRONMENT & SECRET
+# ==================================
 .env
-.env*.local
+.env.*
+!.env.example
 
-# TypeScript build cache
-*.tsbuildinfo
-
-# TypeScript build cache
-*.tsbuildinfo
-
-# TypeScript build cache
+# ==================================
+# TYPESCRIPT
+# ==================================
 *.tsbuildinfo

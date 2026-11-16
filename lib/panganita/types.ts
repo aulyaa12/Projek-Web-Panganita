@@ -36,10 +36,18 @@ export interface BahanPangan {
   nama_kelas_cv: string;
   kategori: Kategori;
   bdd: number | null;
+
+  // Komposisi zat gizi per 100 gram BDD
   energi_kkal_per_100g_bdd: number | null;
   protein_g_per_100g_bdd: number | null;
+  lemak_g_per_100g_bdd: number | null;
+  serat_g_per_100g_bdd: number | null;
+  kalsium_mg_per_100g_bdd: number | null;
+  vitamin_c_mg_per_100g_bdd: number | null;
+
   harga_umum_per_kg: number | null;
 }
+
 
 export interface PengaturanRumus {
   versi: string;
