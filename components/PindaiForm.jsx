@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 import { createClient as createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { LoadingState } from "@/components/LoadingState";
 
 import { ambilAlternatif, simpanKeputusan } from "@/actions/keputusan";
 
@@ -710,6 +711,16 @@ export function PindaiForm({ bahan, hariDefault }) {
                 >
                   <X size={18} />
                 </button>
+
+                {/* Lapisan loading saat AI memproses foto */}
+                {sedangDeteksi && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-[2px]">
+                    <LoadingState
+                      pesan="Sedang memeriksa foto panen…"
+                      layarPenuh={false}
+                    />
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex min-h-[310px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-emerald-200 bg-emerald-50/40 px-5 text-center">
@@ -765,7 +776,7 @@ export function PindaiForm({ bahan, hariDefault }) {
               {sedangDeteksi ? (
                 <>
                   <LoaderCircle size={18} className="animate-spin" />
-                  Mengidentifikasi pangan...
+                  Memeriksa foto panen...
                 </>
               ) : (
                 <>

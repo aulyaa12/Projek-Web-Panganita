@@ -115,17 +115,19 @@ export function AppNav() {
             title="Keluar dari akun"
             aria-label="Keluar dari akun"
             aria-busy={sedangKeluar}
-            className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[#e1eae0] bg-white px-3.5 text-sm font-bold text-[#41634a] transition-all duration-200 hover:border-[#1B4D2B] hover:bg-[#1B4D2B] hover:text-white hover:shadow-md hover:shadow-[#1B4D2B]/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:min-h-12 sm:px-4 sm:text-base xl:min-h-14 xl:px-5"
+            className="inline-flex min-h-12 min-w-12 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-[#e1eae0] bg-white px-3 text-sm font-bold text-[#41634a] transition-all duration-200 hover:border-[#1B4D2B] hover:bg-[#FFD23F] hover:text-[#1B4D2B] hover:shadow-md hover:shadow-[#1B4D2B]/20 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 sm:gap-2 sm:px-4 sm:text-base xl:min-h-14 xl:px-5"
           >
             {sedangKeluar ? (
               <span
-                className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent"
+                className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-current border-t-transparent"
                 aria-hidden="true"
               />
             ) : (
-              <LogOut aria-hidden="true" className="h-5 w-5" />
+              <LogOut aria-hidden="true" className="h-5 w-5 shrink-0" />
             )}
-            <span>{sedangKeluar ? "Keluar…" : "Keluar"}</span>
+            <span className="sr-only min-[420px]:not-sr-only">
+              {sedangKeluar ? "Keluar…" : "Keluar"}
+            </span>
           </button>
         </div>
       </header>
