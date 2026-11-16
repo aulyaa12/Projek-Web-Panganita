@@ -116,7 +116,7 @@ const BAGIAN = [
     isi: (
       <p>
         Cara kami mengumpulkan, memakai, dan menyimpan gambar, suara, dan data
-        keluargamu dijelaskan di{" "}
+        keluarga Ibu dijelaskan di{" "}
         <Link
           href="/kebijakan-privasi"
           className="font-bold text-[#1B4D2B] underline underline-offset-4"
