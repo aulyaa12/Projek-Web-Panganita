@@ -101,5 +101,5 @@ Dokumentasi Swagger API dapat diakses di `http://localhost:3000/api-docs`.
 - **Aulya Rakhmawati**: Database Architecture, AI Computer Vision Integration, Initial Assessment API & Backend Management.
 - **Prawita Mepilianti**: AI RAG Chatbot Integration, Speech & Dialect Normalization, Swagger API Documentation, SQL Scripts & Seed Data, AI Technical Documentation.
 - **Dita Surya Kartika**: Supabase Storage Integration, WhatsApp OTP Authentication, Presentation Deck & Video Showcase.
-- **Deasy**: Product Requirement Document (PRD/BRD), User Story, User Flow, UI/UX Prototype, Registration Flow.
+- **Dessy Christina Elseba Matakupan**: Product Requirement Document (PRD/BRD), User Story, User Flow, UI/UX Prototype, Registration Flow.
 
