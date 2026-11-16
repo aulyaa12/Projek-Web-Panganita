@@ -23,17 +23,20 @@ const BENTUK_TEPI = {
 
 export function Footer({
   bentukTepi = "rounded", // ganti default ke "square" jika ingin siku
-  ruangNavBawah = false, // true jika bottom navbar tampil di tablet (AppNav)
+  tampilDiMobile = false, // true = footer juga tampil di mobile
+  ruangNavBawah = false, // true jika bottom navbar tampil (AppNav)
   tautan = TAUTAN_FOOTER,
   className,
 }) {
   return (
     <footer
       className={cn(
-        // hanya tablet & desktop
-        "relative hidden overflow-hidden bg-[#0F2D1A] text-white md:block",
-        // ruang aman agar tidak tertutup bottom navbar di tablet (md sampai lg)
-        ruangNavBawah && "md:pb-20 lg:pb-0",
+        "relative overflow-hidden bg-[#0F2D1A] text-white",
+        // default: hanya tablet & desktop. Dengan tampilDiMobile: semua ukuran
+        tampilDiMobile ? "block" : "hidden md:block",
+        // ruang aman agar tidak tertutup bottom navbar (AppNav) sampai lg
+        ruangNavBawah &&
+          (tampilDiMobile ? "pb-20 lg:pb-0" : "md:pb-20 lg:pb-0"),
         BENTUK_TEPI[bentukTepi] ?? BENTUK_TEPI.rounded,
         className,
       )}
@@ -50,8 +53,8 @@ export function Footer({
       />
 
       <div className="relative mx-auto max-w-6xl px-6 lg:px-8">
-        {/* Baris 1: logo + navigasi */}
-        <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-2 pb-3 pt-6">
+        {/* Baris 1: logo + navigasi (mobile: bertumpuk dan rata tengah) */}
+        <div className="flex flex-col items-center gap-x-8 gap-y-2 pb-3 pt-6 md:flex-row md:flex-wrap md:justify-between">
           <Link
             href="/"
             aria-label="Panganita, kembali ke beranda"
@@ -67,7 +70,7 @@ export function Footer({
           </Link>
 
           <nav aria-label="Tautan footer">
-            <ul className="flex flex-wrap items-center gap-1">
+            <ul className="flex flex-wrap items-center justify-center gap-1">
               {tautan.map((item) => (
                 <li key={item.href}>
                   <Link
@@ -87,7 +90,7 @@ export function Footer({
           <p className="pt-4 text-center text-xs text-white/60">
             Didukung oleh Perempuan Inovasi GENerasi AI × IBM SkillsBuild
           </p>
-          <p className="py-5 text-center text-sm text-white/70">
+          <p className="pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3 text-center text-sm text-white/70">
             © 2026 Panganita oleh Kelompok Malahayati. Hak Cipta Dilindungi.
           </p>
         </div>
