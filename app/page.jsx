@@ -1,443 +1,582 @@
-"use client";
-
-import Image from "next/image";
 import {
+  Baby,
   Camera,
-  History,
-  Users,
-  ArrowRight,
-  ArrowUpRight,
+  ChevronDown,
+  Eye,
+  Fish,
+  Hand,
+  Leaf,
+  MessageCircle,
+  Mic,
+  ShieldCheck,
+  Smartphone,
   Sprout,
-  CheckCircle2,
+  UserRound,
+  WifiOff,
 } from "lucide-react";
 
-import { MulaiButton } from "@/components/MulaiButton";
+import { GambarCadangan } from "@/components/GambarCadangan";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import { SecondaryButton } from "@/components/SecondaryButton";
+
+/*
+  Landing Page PANGANITA ("/").
+  Navbar dan footer dipasang oleh NavKondisional, jadi file ini hanya isi halaman.
+
+  GAMBAR (taruh di folder public):
+  - MASKOT      : maskot Bu Nita (PNG transparan). SESUAIKAN nama file dengan milik Ibu.
+  - FOTO_PANEN  : foto stok gratis (Unsplash/Pexels), misalnya perempuan nelayan atau petani
+                  Indonesia membawa hasil panen. Simpan sebagai JPG dan cantumkan fotografernya di README.
+  Bila file belum ada, halaman tetap tampil rapi dengan kotak pengganti.
+*/
+const MASKOT = "/images/maskot-bu-nita.png";
+const FOTO_PANEN = "/images/landing/panen-ibu.jpg";
+
+const FAKTA_MASALAH = [
+  {
+    angka: "29,4%",
+    teks: "balita keluarga nelayan di Kota Bengkulu mengalami stunting.",
+    sumber: "Yuliantini dkk., 2022. Contoh dari dua kelurahan, 74 balita.",
+  },
+  {
+    angka: "4,1×",
+    teks: "lebih besar risiko stunting bila asupan protein balita rendah.",
+    sumber: "Yuliantini dkk., 2022, Kota Bengkulu.",
+  },
+  {
+    angka: "2,5×",
+    teks: "lebih besar risiko stunting pada anak dari keluarga termiskin.",
+    sumber: "SSGI 2024, Kementerian Kesehatan RI.",
+  },
+];
 
 const FITUR = [
   {
-    nomor: "01",
-    icon: Users,
-    judul: "Profil Keluarga",
-    deskripsi:
-      "Informasi anggota keluarga menjadi dasar untuk mempertimbangkan kebutuhan pangan dan gizi keluarga.",
-    label: "Kebutuhan keluarga",
+    nama: "Pindai Panen",
+    ikon: Camera,
+    kalimat: "Cukup foto hasil panen, tanpa mengetik.",
+    isi: "Panganita mengenali 15 jenis pangan lokal: ikan dan udang, sayur, buah, pangan pokok, dan telur. Lalu Ibu mengisi berat dan harga, dan Panganita menghitung berapa yang disimpan untuk keluarga dan berapa yang dijual.",
+    contoh: "Contoh: 2 kg ikan lele, simpan 0,5 kg untuk balita, jual 1,5 kg.",
+    utama: true,
   },
   {
-    nomor: "02",
-    icon: Camera,
-    judul: "Pindai Panen",
-    deskripsi:
-      "Kenali hasil panen melalui foto, masukkan beratnya, dan lihat tiga alternatif pembagian.",
-    label: "Identifikasi pangan",
+    nama: "Tumbuh1000",
+    ikon: Sprout,
+    kalimat: "Bandingkan tiga pilihan pembagian panen.",
+    isi: "Prioritas Gizi, Seimbang, atau Prioritas Uang. Setiap pilihan dihitung dari jumlah anggota keluarga dan Angka Kecukupan Gizi, lengkap dengan alasannya. Ibu yang menentukan, dan pilihan Ibu tersimpan di riwayat.",
+    contoh: "Cocok untuk keluarga dengan ibu hamil, ibu menyusui, atau balita.",
+    utama: false,
   },
   {
-    nomor: "03",
-    icon: History,
-    judul: "Riwayat Keputusan",
-    deskripsi:
-      "Dokumentasikan keputusan pembagian hasil panen agar mudah ditinjau kembali.",
-    label: "Dokumentasi panen",
+    nama: "Bu Nita",
+    ikon: MessageCircle,
+    kalimat: "Teman bertanya soal gizi dan resep.",
+    isi: "Tanyakan ide olahan pangan lokal atau gizi anak lewat suara maupun tulisan. Jawaban Bu Nita menyebut rujukan dari buku panduan dan Tabel Komposisi Pangan Indonesia Kementerian Kesehatan.",
+    contoh: "Contoh: “Panen tomat 5 kg untuk 3 hari, saran jual berapa kg?”",
+    utama: false,
   },
 ];
 
 const LANGKAH = [
   {
-    nomor: "01",
-    judul: "Kenali kebutuhan keluarga",
-    deskripsi:
-      "Lengkapi profil keluarga sebagai dasar pertimbangan kebutuhan pangan.",
+    judul: "Masuk lewat WhatsApp",
+    isi: "Tanpa kata sandi baru. Ibu cukup memasukkan kode yang dikirim ke WhatsApp.",
+    ikon: Smartphone,
   },
   {
-    nomor: "02",
-    judul: "Identifikasi hasil panen",
-    deskripsi:
-      "Ambil foto atau unggah pangan untuk dikenali sistem. Pemilihan manual juga tersedia.",
+    judul: "Isi data keluarga",
+    isi: "Sekali saja: nama Ibu, kondisi Ibu, dan jumlah anak menurut usia.",
+    ikon: UserRound,
   },
   {
-    nomor: "03",
-    judul: "Tentukan pembagian",
-    deskripsi:
-      "Bandingkan tiga alternatif pembagian dan pilih sesuai kondisi keluarga.",
+    judul: "Foto hasil panen",
+    isi: "Ambil foto langsung atau pilih foto dari galeri HP.",
+    ikon: Camera,
+  },
+  {
+    judul: "Pilih pembagian",
+    isi: "Lihat tiga pilihan, pilih yang cocok, dan simpan di riwayat.",
+    ikon: Leaf,
   },
 ];
 
-export default function Beranda() {
+const KEMUDAHAN = [
+  {
+    judul: "Tombol besar dan jelas",
+    isi: "Mudah disentuh, juga saat tangan basah atau kotor.",
+    ikon: Hand,
+  },
+  {
+    judul: "Tulisan terbaca di bawah matahari",
+    isi: "Warna kontras tinggi dan huruf cukup besar.",
+    ikon: Eye,
+  },
+  {
+    judul: "Bisa tanya lewat suara",
+    isi: "Ibu tidak harus mengetik untuk bertanya kepada Bu Nita.",
+    ikon: Mic,
+  },
+  {
+    judul: "Sinyal sedang susah?",
+    isi: "Foto bisa diunggah nanti, saat Ibu berada di tempat yang sinyalnya baik.",
+    ikon: WifiOff,
+  },
+];
+
+const PERTANYAAN = [
+  {
+    tanya: "Apakah Panganita pengganti bidan atau dokter?",
+    jawab:
+      "Bukan. Hasil hitungan dan jawaban Bu Nita adalah alat bantu dan bisa saja keliru. Untuk kesehatan Ibu dan anak, tetap tanyakan kepada bidan, kader posyandu, atau dokter.",
+  },
+  {
+    tanya: "Pangan apa saja yang bisa dikenali dari foto?",
+    jawab:
+      "Ada 15 jenis: 5 ikan dan udang, 3 sayur, 3 buah, 3 pangan pokok, dan telur. Bila hasilnya kurang tepat, Ibu bisa mengoreksi nama pangan lewat kolom pencarian.",
+  },
+  {
+    tanya: "Foto dan data keluarga saya dipakai untuk apa?",
+    jawab:
+      "Hanya untuk menghitung pembagian panen dan menampilkan riwayat Ibu. Foto disimpan hanya bila Ibu memilih salah satu pembagian, dan tidak diperlihatkan kepada pengguna lain.",
+  },
+  {
+    tanya: "Mengapa masuk lewat WhatsApp?",
+    jawab:
+      "Karena banyak ibu sudah akrab dengan WhatsApp. Ibu tidak perlu mengingat kata sandi baru.",
+  },
+  {
+    tanya: "Bagaimana kalau sinyal di tempat saya susah?",
+    jawab:
+      "Ibu perlu sinyal untuk memproses foto. Karena itu Ibu bisa memotret dulu, lalu mengunggah foto dari galeri saat sudah berada di tempat dengan sinyal yang baik, misalnya Balai Desa.",
+  },
+];
+
+// Judul bagian: satu pola untuk semua bagian halaman.
+function JudulBagian({ id, judul, pengantar, terang = false, tengah = false }) {
   return (
-    <main className="min-h-dvh overflow-hidden bg-[#F8F8F3] text-[#0F2D1A]">
-      {/* =====================================================
-          HERO — PREMIUM EDITORIAL
-      ===================================================== */}
-
-      <section className="mx-auto max-w-[1440px] px-5 pb-20 pt-12 sm:px-8 lg:px-16 lg:pb-28 lg:pt-20">
-        <div className="grid items-center gap-12 lg:grid-cols-[1.08fr_0.92fr] lg:gap-10">
-          {/* LEFT: EDITORIAL COPY */}
-
-          <div className="relative z-10">
-            <div className="mb-8 flex items-center gap-3">
-              <span className="h-[2px] w-9 bg-[#3E8E1F]" />
-              <span className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#3E8E1F]">
-                Pangan dan Gizi Keluarga
-              </span>
-            </div>
-
-            <h1 className="max-w-[760px] text-[clamp(3.1rem,6.5vw,6.1rem)] font-extrabold leading-[0.99] tracking-[-0.065em] text-[#0F2D1A]">
-              Hasil panen
-              <br />
-              untuk masa depan
-              <br />
-              <span className="font-serif font-medium italic tracking-[-0.045em] text-[#3E8E1F]">
-                keluarga.
-              </span>
-            </h1>
-
-            <p className="mt-8 max-w-[490px] text-base font-medium leading-[1.9] text-[#435247] sm:text-lg">
-              PANGANITA membantu perempuan produsen pangan mengenali hasil
-              panen, mempertimbangkan kebutuhan gizi keluarga, dan menentukan
-              pembagian hasil panen secara lebih bijak.
-            </p>
-
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <MulaiButton />
-
-              <a
-                href="#fitur"
-                className="group inline-flex min-h-12 items-center justify-center gap-2 px-4 text-sm font-bold text-[#1B4D2B] transition-colors hover:text-[#3E8E1F]"
-              >
-                Kenali PANGANITA
-                <ArrowUpRight
-                  size={17}
-                  className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                />
-              </a>
-            </div>
-
-            <div className="mt-12 flex flex-wrap items-center gap-x-7 gap-y-3 border-t border-[#DCE5D9] pt-6">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-[#3E8E1F]" />
-                <span className="text-xs font-semibold text-[#34463A]">
-                  Berorientasi keluarga
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-[#3E8E1F]" />
-                <span className="text-xs font-semibold text-[#34463A]">
-                  Rekomendasi pembagian panen
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT: VISUAL PRODUCT COMPOSITION */}
-
-          <div className="relative mx-auto w-full max-w-[570px]">
-            <div className="relative overflow-hidden rounded-[2rem] border border-[#DCE6D9] bg-[#EAF1E5]">
-              {/* Decorative background */}
-
-              <div className="absolute -right-20 -top-16 h-80 w-80 rounded-full border border-[#90C226]/30" />
-
-              <div className="absolute -right-10 -top-6 h-60 w-60 rounded-full border border-[#90C226]/30" />
-
-              <div className="absolute bottom-0 left-0 h-64 w-full bg-gradient-to-t from-[#DCE9D5] to-transparent" />
-
-              {/* Image label */}
-
-              <div className="absolute left-7 top-7 z-20">
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#1B4D2B]">
-                  Asisten Digital PANGANITA
-                </span>
-              </div>
-
-              {/* Original avatar */}
-
-              <div className="relative z-10 flex min-h-[480px] items-start justify-center px-4 pb-44 pt-14 sm:min-h-[540px]">
-                <Image
-                  src="/images/maskot-bu-nita.png"
-                  alt="Bu Nita, asisten gizi PANGANITA"
-                  width={440}
-                  height={440}
-                  priority
-                  sizes="(max-width: 768px) 80vw, 440px"
-                  className="h-[340px] w-[340px] object-contain drop-shadow-xl sm:h-[410px] sm:w-[410px]"
-                />
-              </div>
-
-              {/* Floating harvest information */}
-
-              <div className="absolute inset-x-4 bottom-4 z-20 rounded-2xl border border-white/80 bg-white/95 p-5 shadow-[0_15px_45px_-20px_rgba(15,45,26,0.25)] backdrop-blur-md sm:inset-x-7 sm:bottom-7 sm:p-6">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.17em] text-[#3E8E1F]">
-                      Contoh simulasi pembagian
-                    </p>
-
-                    <h2 className="mt-2 text-xl font-extrabold tracking-tight text-[#0F2D1A]">
-                      Ikan lele
-                      <span className="ml-2 text-sm font-semibold text-[#435247]">
-                        2 kg
-                      </span>
-                    </h2>
-                  </div>
-
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EAF4DF] text-[#1B4D2B]">
-                    <Sprout size={21} />
-                  </div>
-                </div>
-
-                <div className="mt-5 flex h-2.5 overflow-hidden rounded-full bg-[#E7ECE5]">
-                  <div className="w-[70%] bg-[#3E8E1F]" />
-                  <div className="w-[30%] bg-[#90C226]" />
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                  <div className="border-l-[3px] border-[#3E8E1F] pl-3">
-                    <p className="text-xs font-semibold text-[#435247]">
-                      Disimpan untuk keluarga
-                    </p>
-                    <p className="mt-1 text-2xl font-extrabold tracking-tight text-[#0F2D1A]">
-                      1,4 kg
-                    </p>
-                  </div>
-
-                  <div className="border-l-[3px] border-[#90C226] pl-3">
-                    <p className="text-xs font-semibold text-[#435247]">
-                      Dijual
-                    </p>
-                    <p className="mt-1 text-2xl font-extrabold tracking-tight text-[#0F2D1A]">
-                      0,6 kg
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* =====================================================
-          PRODUCT FEATURES — EDITORIAL LIST
-      ===================================================== */}
-
-      <section
-        id="fitur"
-        className="scroll-mt-10 border-y border-[#E3E8DF] bg-white"
+    <div className={tengah ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
+      <h2
+        id={id}
+        className={`text-3xl font-extrabold leading-tight sm:text-4xl ${
+          terang ? "text-white" : "text-[#0F2D1A]"
+        }`}
       >
-        <div className="mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:px-16 lg:py-28">
-          <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-24">
-            {/* Section introduction */}
+        {judul}
+      </h2>
+      {pengantar && (
+        <p
+          className={`mt-3 text-lg leading-relaxed ${
+            terang ? "text-white/85" : "text-[#3d5044]"
+          }`}
+        >
+          {pengantar}
+        </p>
+      )}
+    </div>
+  );
+}
 
-            <div className="lg:sticky lg:top-24 lg:self-start">
-              <div className="flex items-center gap-3">
-                <span className="h-[2px] w-8 bg-[#3E8E1F]" />
-                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#3E8E1F]">
-                  01 — Fitur Utama
-                </span>
+export default function LandingPage() {
+  return (
+    <main id="isi-utama" className="overflow-x-clip">
+      {/* 1. HERO */}
+      <section
+        aria-labelledby="judul-hero"
+        className="mx-auto mt-4 w-full max-w-6xl px-3 sm:px-6"
+      >
+        <div className="relative overflow-hidden rounded-[32px] bg-[#1B4D2B] px-5 py-10 text-white sm:px-10 sm:py-14 lg:px-14">
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-[#3E8E1F] via-[#90C226] to-[#E6B91E]"
+          />
+          <div className="relative grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <h1
+                id="judul-hero"
+                className="text-4xl font-extrabold leading-[1.15] sm:text-5xl"
+              >
+                Panen hari ini, gizi anak tetap terjaga.
+              </h1>
+              <p className="mt-5 max-w-xl text-xl leading-relaxed text-white/90">
+                Panganita membantu Ibu memutuskan berapa yang dijual dan berapa
+                yang disisihkan untuk keluarga, mulai dari satu foto hasil
+                panen.
+              </p>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <PrimaryButton
+                  href="/masuk"
+                  ikon={MessageCircle}
+                  className="bg-[#FFD23F] font-bold text-[#0F2D1A] hover:bg-[#ffdc66]"
+                >
+                  Masuk lewat WhatsApp
+                </PrimaryButton>
+                <SecondaryButton
+                  href="#cara-kerja"
+                  className="min-h-14 border-2 border-white font-bold text-[#0F2D1A] hover:border-[#FFD23F] hover:bg-[#90C226] hover:text-[#0F2D1A] focus-visible:ring-[#FFD23F]"
+                >
+                  Lihat cara kerjanya
+                </SecondaryButton>
               </div>
 
-              <h2 className="mt-7 text-4xl font-extrabold leading-[1.1] tracking-[-0.05em] text-[#0F2D1A] sm:text-5xl">
-                Satu alur.
-                <br />
-                Tiga kebutuhan
-                <br />
-                <span className="font-serif font-medium italic text-[#3E8E1F]">
-                  penting.
-                </span>
-              </h2>
-
-              <p className="mt-7 max-w-md text-base font-medium leading-8 text-[#435247]">
-                Setiap fitur dirancang untuk saling mendukung, mulai dari
-                memahami kebutuhan keluarga hingga menentukan pembagian hasil
-                panen.
+              <p className="mt-6 flex items-start gap-2 text-base text-white/80">
+                <ShieldCheck
+                  aria-hidden="true"
+                  className="mt-0.5 h-5 w-5 shrink-0 text-[#90C226]"
+                />
+                Tanpa kata sandi. Untuk ibu produsen pangan dengan anak usia
+                1.000 hari pertama.
               </p>
             </div>
 
-            {/* Feature rows */}
-
-            <div className="border-t border-[#DCE5D9]">
-              {FITUR.map((fitur) => {
-                const Icon = fitur.icon;
-
-                return (
-                  <article
-                    key={fitur.nomor}
-                    className="group border-b border-[#DCE5D9] py-8 transition-colors duration-200 hover:bg-[#FAFCF8] sm:py-10"
-                  >
-                    <div className="grid gap-5 sm:grid-cols-[65px_1fr_auto] sm:items-start">
-                      <span className="text-sm font-extrabold tracking-widest text-[#3E8E1F]">
-                        {fitur.nomor}
-                      </span>
-
-                      <div>
-                        <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-[#69816C]">
-                          {fitur.label}
-                        </p>
-
-                        <h3 className="text-2xl font-extrabold tracking-tight text-[#0F2D1A] sm:text-3xl">
-                          {fitur.judul}
-                        </h3>
-
-                        <p className="mt-3 max-w-lg text-base font-medium leading-7 text-[#435247]">
-                          {fitur.deskripsi}
-                        </p>
-                      </div>
-
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#DCE5D9] text-[#1B4D2B] transition-all group-hover:border-[#90C226] group-hover:bg-[#EAF4DF]">
-                        <Icon size={22} strokeWidth={1.8} />
-                      </div>
-                    </div>
-                  </article>
-                );
-              })}
+            {/* Maskot Bu Nita dengan latar */}
+            <div className="relative mx-auto w-full max-w-sm lg:max-w-none">
+              <div className="relative overflow-hidden rounded-[28px] bg-[radial-gradient(90%_70%_at_50%_32%,#FFF0B3_0%,#E2EE82_30%,#90C226_58%,#3E8E1F_100%)] pt-8">
+                {/* Bayangan lembut di bagian bawah agar maskot terasa berpijak */}
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#1B4D2B]/45 to-transparent"
+                />
+                <GambarCadangan
+                  src={MASKOT}
+                  alt="Bu Nita, penyuluh gizi digital Panganita, tersenyum ramah"
+                  width={600}
+                  height={600}
+                  priority
+                  ikonCadangan={
+                    <Sprout aria-hidden="true" className="h-24 w-24" />
+                  }
+                  kelasCadangan="relative mx-auto h-72 w-72 rounded-full bg-transparent text-[#1B4D2B]"
+                  className="relative mx-auto h-auto w-64 object-contain sm:w-80"
+                />
+              </div>
+              <p className="relative z-10 -mt-6 mx-4 rounded-2xl bg-white p-4 text-[#0F2D1A] shadow-lg">
+                <span className="block text-lg font-bold">Bu Nita</span>
+                <span className="text-base text-[#3d5044]">
+                  Penyuluh gizi yang siap menemani Ibu bertanya.
+                </span>
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* =====================================================
-          HOW IT WORKS — DARK EDITORIAL
-      ===================================================== */}
-
+      {/* 2. MASALAH */}
       <section
-        id="cara-kerja"
-        className="relative overflow-hidden bg-[#0F2D1A]"
+        aria-labelledby="judul-masalah"
+        className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20"
       >
-        <div className="absolute -right-32 -top-40 h-[450px] w-[450px] rounded-full border border-white/[0.06]" />
+        <JudulBagian
+          id="judul-masalah"
+          judul="Panen berlimpah, tetapi gizi anak sering tersisih."
+          pengantar="Di banyak desa pesisir, ikan dan udang terbaik dijual semua. Uangnya dipakai membeli pangan praktis seperti mi instan, sehingga protein untuk anak berkurang."
+        />
 
-        <div className="absolute -right-20 -top-28 h-[320px] w-[320px] rounded-full border border-white/[0.06]" />
-
-        <div className="relative mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:px-16 lg:py-28">
-          <div className="max-w-3xl">
-            <div className="flex items-center gap-3">
-              <span className="h-[2px] w-8 bg-[#90C226]" />
-              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#90C226]">
-                02 — Cara Kerja
-              </span>
-            </div>
-
-            <h2 className="mt-7 text-4xl font-extrabold leading-[1.1] tracking-[-0.05em] text-white sm:text-5xl lg:text-6xl">
-              Dari hasil panen
-              <br />
-              menjadi keputusan
-              <span className="font-serif font-medium italic text-[#90C226]">
-                {" "}
-                bijak.
-              </span>
-            </h2>
-
-            <p className="mt-6 max-w-xl text-base font-medium leading-8 text-[#DCE8DD]">
-              Ikuti tiga tahapan sederhana untuk membantu Ibu mempertimbangkan
-              pembagian hasil panen berdasarkan kebutuhan keluarga.
-            </p>
+        <div className="mt-10 grid items-stretch gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="relative min-h-72 overflow-hidden rounded-[28px]">
+          <GambarCadangan
+            src={FOTO_PANEN}
+            alt="Seorang ibu membawa hasil panen untuk keluarganya"
+            width={1200}
+            height={1000}
+            ikonCadangan={<Fish aria-hidden="true" className="h-16 w-16" />}
+            kelasCadangan="absolute inset-0"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
           </div>
 
-          {/* Timeline */}
-
-          <div className="mt-16 grid gap-10 md:grid-cols-3 md:gap-8">
-            {LANGKAH.map((langkah, index) => (
-              <article
-                key={langkah.nomor}
-                className="relative border-t border-white/20 pt-7"
+          <ul className="grid gap-4">
+            {FAKTA_MASALAH.map((fakta) => (
+              <li
+                key={fakta.angka}
+                className="flex items-center gap-5 rounded-2xl border border-[#D5E2D2] bg-white p-5 shadow-[0_5px_25px_rgba(30,77,48,0.07)]"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-4xl font-extrabold tracking-tight text-[#90C226]">
-                    {langkah.nomor}
-                  </span>
-
-                  {index === 0 && <Users size={23} className="text-white/70" />}
-                  {index === 1 && (
-                    <Camera size={23} className="text-white/70" />
-                  )}
-                  {index === 2 && (
-                    <CheckCircle2 size={23} className="text-white/70" />
-                  )}
+                <p className="min-w-[6.5rem] shrink-0 text-4xl font-extrabold text-[#1B4D2B] xl:min-w-[8rem] xl:text-5xl">
+                  {fakta.angka}
+                </p>
+                <div className="min-w-0">
+                  <p className="text-lg font-medium leading-snug text-[#0F2D1A]">
+                    {fakta.teks}
+                  </p>
+                  <p className="mt-1 text-sm text-[#53665a]">{fakta.sumber}</p>
                 </div>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-                <h3 className="mt-7 text-xl font-bold text-white">
+        <p className="mt-8 max-w-3xl text-xl font-semibold leading-relaxed text-[#1B4D2B]">
+          Panganita mengajak Ibu menyisihkan sebelum menjual: sebagian untuk
+          gizi anak dan Ibu, sebagian tetap dijual untuk kebutuhan keluarga.
+        </p>
+      </section>
+
+      {/* 3. TIGA FITUR */}
+      <section
+        aria-labelledby="judul-fitur"
+        className="bg-[#EAF1E8] py-16 sm:py-20"
+      >
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+          <JudulBagian
+            id="judul-fitur"
+            tengah
+            judul="Tiga teman Ibu di Panganita"
+            pengantar="Mulai dari Pindai Panen. Dua teman lainnya melengkapi keputusan Ibu."
+          />
+
+          <ul className="mt-10 grid gap-6 lg:grid-cols-3">
+            {FITUR.map((fitur) => {
+              const Ikon = fitur.ikon;
+              return (
+                <li
+                  key={fitur.nama}
+                  className={`flex flex-col rounded-3xl p-6 sm:p-7 ${
+                    fitur.utama
+                      ? "bg-[#1B4D2B] text-white"
+                      : "border border-[#D5E2D2] bg-white text-[#0F2D1A]"
+                  }`}
+                >
+                  <span
+                    className={`flex h-14 w-14 items-center justify-center rounded-2xl ${
+                      fitur.utama
+                        ? "bg-[#FFD23F] text-[#0F2D1A]"
+                        : "bg-[#EAF1E8] text-[#1B4D2B]"
+                    }`}
+                  >
+                    <Ikon aria-hidden="true" className="h-7 w-7" />
+                  </span>
+                  <h3 className="mt-5 text-2xl font-extrabold">{fitur.nama}</h3>
+                  <p
+                    className={`mt-1 text-lg font-semibold ${
+                      fitur.utama ? "text-[#FFD23F]" : "text-[#2e7045]"
+                    }`}
+                  >
+                    {fitur.kalimat}
+                  </p>
+                  <p
+                    className={`mb-6 mt-4 text-lg leading-relaxed ${
+                      fitur.utama ? "text-white/90" : "text-[#26352b]"
+                    }`}
+                  >
+                    {fitur.isi}
+                  </p>
+                  <p
+                    className={`mt-auto rounded-xl p-3 text-base ${
+                      fitur.utama
+                        ? "bg-white/10 text-white"
+                        : "bg-[#F4F7F2] text-[#3d5044]"
+                    }`}
+                  >
+                    {fitur.contoh}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+
+          <p className="mx-auto mt-8 max-w-3xl text-center text-base text-[#3d5044]">
+            Pengenalan pangan dari foto dan jawaban Bu Nita dibantu kecerdasan
+            buatan (AI), dan akan diberi tanda di layar. Hasilnya bisa keliru,
+            jadi Ibu tetap yang memutuskan.
+          </p>
+        </div>
+      </section>
+
+      {/* 4. CARA KERJA */}
+      <section
+        id="cara-kerja"
+        aria-labelledby="judul-cara"
+        className="mx-auto w-full max-w-6xl scroll-mt-28 px-4 py-16 sm:px-6 sm:py-20"
+      >
+        <JudulBagian
+          id="judul-cara"
+          judul="Empat langkah, satu arah."
+          pengantar="Tidak ada menu berlapis. Ibu tinggal mengikuti urutannya."
+        />
+
+        <ol className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {LANGKAH.map((langkah, i) => {
+            const Ikon = langkah.ikon;
+            return (
+              <li
+                key={langkah.judul}
+                className="rounded-3xl border border-[#D5E2D2] bg-white p-6"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1B4D2B] text-xl font-extrabold text-white">
+                    {i + 1}
+                  </span>
+                  <Ikon aria-hidden="true" className="h-7 w-7 text-[#3E8E1F]" />
+                </div>
+                <h3 className="mt-4 text-xl font-bold text-[#0F2D1A]">
                   {langkah.judul}
                 </h3>
-
-                <p className="mt-4 max-w-sm text-sm font-medium leading-7 text-[#DCE8DD]">
-                  {langkah.deskripsi}
+                <p className="mt-2 text-lg leading-relaxed text-[#3d5044]">
+                  {langkah.isi}
                 </p>
-              </article>
+              </li>
+            );
+          })}
+        </ol>
+
+        <p className="mt-6 text-lg text-[#3d5044]">
+          Ada pertanyaan di tengah jalan? Ibu bisa bertanya kepada Bu Nita kapan
+          saja.
+        </p>
+      </section>
+
+      {/* 5. KUTIPAN + KEMUDAHAN */}
+      <section
+        aria-labelledby="judul-mudah"
+        className="bg-[#0F2D1A] py-16 text-white sm:py-20"
+      >
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+          <figure className="relative mx-auto max-w-3xl px-8 py-16 text-center sm:px-16 sm:py-20">
+            {/* Garis atas, dengan tanda kutip buka */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-0 right-3 top-0 h-12 border-r-[3px] border-t-[3px] border-[#FFD23F]"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-24 right-0 top-3 h-16 border-r-[3px] border-t-[3px] border-white"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-0 top-3 w-4 border-t-[3px] border-white"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-6 top-[-2px] font-serif text-6xl font-extrabold leading-none text-white"
+            >
+              “
+            </span>
+
+            <blockquote className="text-3xl font-extrabold leading-snug text-[#FFD23F] sm:text-4xl">
+              Sisihkan sebelum dijual.
+            </blockquote>
+            <figcaption className="mt-3 text-lg text-white/80">
+              Pesan pendampingan gizi di Teluk Bintuni, Papua Barat, yang
+              menjadi dasar pengembangan Panganita.
+            </figcaption>
+
+            {/* Garis bawah, dengan tanda kutip tutup */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-0 left-3 right-0 h-12 border-b-[3px] border-l-[3px] border-[#FFD23F]"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-3 left-0 right-24 h-16 border-b-[3px] border-l-[3px] border-white"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-3 right-0 w-4 border-b-[3px] border-white"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute bottom-[-6px] right-6 font-serif text-6xl font-extrabold leading-none text-white"
+            >
+              ”
+            </span>
+          </figure>
+
+          <div className="mt-14">
+            <JudulBagian
+              id="judul-mudah"
+              terang
+              judul="Dibuat untuk Ibu yang bekerja di ladang dan laut."
+              pengantar="Tangan basah, matahari terik, sinyal terbatas. Semua itu kami pikirkan."
+            />
+            <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+              {KEMUDAHAN.map((item) => {
+                const Ikon = item.ikon;
+                return (
+                  <li
+                    key={item.judul}
+                    className="flex gap-4 rounded-2xl bg-white/10 p-5"
+                  >
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#90C226] text-[#0F2D1A]">
+                      <Ikon aria-hidden="true" className="h-6 w-6" />
+                    </span>
+                    <div>
+                      <h3 className="text-xl font-bold">{item.judul}</h3>
+                      <p className="mt-1 text-lg text-white/85">{item.isi}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. PERTANYAAN */}
+      <section
+        aria-labelledby="judul-tanya"
+        className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20"
+      >
+        <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+          <JudulBagian
+            id="judul-tanya"
+            judul="Pertanyaan yang sering Ibu tanyakan"
+            pengantar="Jawaban singkat tentang cara kerja, keamanan data, dan batas Panganita."
+          />
+
+          <div className="space-y-3">
+            {PERTANYAAN.map((item) => (
+              <details
+                key={item.tanya}
+                className="group rounded-2xl border border-[#D5E2D2] bg-white"
+              >
+                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-2xl px-5 py-3 text-lg font-bold text-[#0F2D1A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F] [&::-webkit-details-marker]:hidden">
+                  {item.tanya}
+                  <ChevronDown
+                    aria-hidden="true"
+                    className="h-6 w-6 shrink-0 text-[#3E8E1F] transition-transform group-open:rotate-180"
+                  />
+                </summary>
+                <p className="px-5 pb-5 text-lg leading-relaxed text-[#26352b]">
+                  {item.jawab}
+                </p>
+              </details>
             ))}
           </div>
         </div>
       </section>
 
-      {/* =====================================================
-          BRAND PHILOSOPHY
-      ===================================================== */}
-
-      <section className="bg-[#F8F8F3]">
-        <div className="mx-auto max-w-[1440px] px-5 py-20 sm:px-8 lg:px-16 lg:py-28">
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-24">
-            <div>
-              <div className="flex items-center gap-3">
-                <span className="h-[2px] w-8 bg-[#3E8E1F]" />
-                <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#3E8E1F]">
-                  03 — Filosofi PANGANITA
-                </span>
-              </div>
-
-              <h2 className="mt-8 text-4xl font-extrabold leading-[1.12] tracking-[-0.055em] text-[#0F2D1A] sm:text-5xl lg:text-[58px]">
-                Panen bukan hanya
-                <br />
-                tentang
-                <span className="font-serif font-medium italic text-[#3E8E1F]">
-                  {" "}
-                  pendapatan.
-                </span>
-              </h2>
-            </div>
-
-            <div className="border-l-[3px] border-[#90C226] py-2 pl-6 sm:pl-9">
-              <p className="text-lg font-semibold leading-9 text-[#1B4D2B]">
-                Sebagian hasil panen dapat dipertimbangkan untuk memenuhi
-                kebutuhan pangan keluarga.
-              </p>
-
-              <p className="mt-5 text-base font-medium leading-8 text-[#435247]">
-                PANGANITA memberikan informasi dan alternatif pembagian sebagai
-                alat bantu keputusan. Namun, keputusan akhir tetap berada di
-                tangan Ibu, sesuai kondisi dan kebutuhan keluarga.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* =====================================================
-          FINAL CTA
-      ===================================================== */}
-
-      <section className="bg-[#F8F8F3] px-5 pb-20 sm:px-8 lg:px-16 lg:pb-28">
-        <div className="mx-auto max-w-[1440px]">
-          <div className="relative overflow-hidden rounded-[2rem] bg-[#1B4D2B] px-7 py-12 sm:px-12 sm:py-16 lg:px-16">
-            <div className="absolute -right-16 -top-32 h-80 w-80 rounded-full border border-white/10" />
-
-            <div className="absolute -right-4 -top-20 h-60 w-60 rounded-full border border-white/10" />
-
-            <div className="relative flex flex-col justify-between gap-9 md:flex-row md:items-center">
-              <div className="max-w-2xl">
-                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#C1E48B]">
-                  Mulai Bersama PANGANITA
-                </p>
-
-                <h2 className="mt-5 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
-                  Langkah bijak dimulai dari hasil panen Ibu.
-                </h2>
-
-                <p className="mt-5 max-w-xl text-base font-medium leading-8 text-[#E2EDE3]">
-                  Kenali hasil panen, pertimbangkan kebutuhan keluarga, dan
-                  tentukan pembagian yang sesuai.
-                </p>
-              </div>
-
-              <div className="relative shrink-0">
-                <MulaiButton />
-              </div>
-            </div>
+      {/* 7. AJAKAN PENUTUP */}
+      <section
+        aria-labelledby="judul-ajakan"
+        className="mx-auto w-full max-w-6xl px-3 pb-16 sm:px-6 sm:pb-20"
+      >
+        <div className="relative overflow-hidden rounded-[32px] bg-[#1B4D2B] px-6 py-12 text-center text-white sm:px-12">
+          <Baby
+            aria-hidden="true"
+            className="absolute -left-4 -top-4 h-28 w-28 text-white/10"
+          />
+          <Leaf
+            aria-hidden="true"
+            className="absolute -bottom-6 -right-4 h-32 w-32 rotate-12 text-white/10"
+          />
+          <h2
+            id="judul-ajakan"
+            className="relative text-3xl font-extrabold sm:text-4xl"
+          >
+            Mulai dari panen Ibu hari ini.
+          </h2>
+          <p className="relative mx-auto mt-3 max-w-xl text-xl text-white/90">
+            Bersama Panganita, kita putus rantai stunting dari sumber pangan
+            keluarga sendiri.
+          </p>
+          <div className="relative mt-8 flex justify-center">
+            <PrimaryButton
+              href="/masuk"
+              ikon={MessageCircle}
+              className="bg-[#FFD23F] font-bold text-[#0F2D1A] hover:bg-[#ffdc66]"
+            >
+              Masuk lewat WhatsApp
+            </PrimaryButton>
           </div>
         </div>
       </section>

@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { PrimaryButton } from "@/components/PrimaryButton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -12,6 +12,10 @@ import { simpanProfil } from "@/actions/profil";
 import { jumlahOrangProfil } from "@/lib/panganita/profil";
 import { DAFTAR_PROVINSI, DAFTAR_KABUPATEN_KOTA } from "@/lib/data/wilayah";
 import { AvatarProfil } from "@/components/AvatarProfil";
+
+// Gaya kartu sama dengan halaman Beranda.
+const KARTU =
+  "rounded-2xl border border-[#D5E2D2] bg-white shadow-[0_5px_25px_rgba(30,77,48,0.07)]";
 
 const KELOMPOK_ANAK = [
   { kunci: "jumlah_bayi_6_11", label: "Bayi 6–11 bulan", keterangan: "Butuh ASI dan MPASI padat protein hewani" },
@@ -113,13 +117,13 @@ function AutoCompleteInput({ value, onChange, label, placeholder, opsi }) {
           onBlur={() => setTimeout(() => setTerbuka(false), 150)}
           onKeyDown={tekan}
           ref={inputRef}
-          className="h-12 text-base border-2 border-[#1B4D2B] bg-white focus:ring-2 ring-[#3E8E1F] focus:border-[#3E8E1F] rounded-md px-3"
+          className="h-12 text-base border-2 border-[#1B4D2B] bg-white focus:ring-2 ring-[#3E8E1F] focus:border-[#3E8E1F] rounded-xl px-3"
           placeholder={placeholder}
         />
         {terbuka && cocok.length > 0 && (
           <ul
             ref={listRef}
-            className="absolute z-50 w-full mt-1 max-h-60 overflow-auto border-2 border-[#1B4D2B] bg-white rounded-md shadow-xl"
+            className="absolute z-50 w-full mt-1 max-h-60 overflow-auto border-2 border-[#1B4D2B] bg-white rounded-xl shadow-xl"
           >
             {cocok.map((o, i) => (
               <li
@@ -133,7 +137,7 @@ function AutoCompleteInput({ value, onChange, label, placeholder, opsi }) {
           </ul>
         )}
       </div>
-      <p className="text-xs text-[#1B4D2B]/70">{placeholder}</p>
+      <p className="text-sm text-[#53665a]">{placeholder}</p>
     </div>
   );
 }
@@ -174,12 +178,12 @@ function PilihanTunggal({ value, onChange, opsi }) {
         onKeyDown={tekan}
         ref={inputRef}
         value={value ?? ""}
-        className="h-12 w-full text-base border-2 border-[#1B4D2B] bg-white rounded-md px-3 focus:ring-2 ring-[#3E8E1F] focus:border-[#3E8E1F] cursor-pointer"
+        className="h-12 w-full text-base border-2 border-[#1B4D2B] bg-white rounded-xl px-3 focus:ring-2 ring-[#3E8E1F] focus:border-[#3E8E1F] cursor-pointer"
       />
       {terbuka && (
         <ul
           ref={listRef}
-          className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border-2 border-[#1B4D2B] bg-white rounded-md shadow-xl"
+          className="absolute z-50 w-full mt-1 max-h-48 overflow-auto border-2 border-[#1B4D2B] bg-white rounded-xl shadow-xl"
         >
           {opsi.map((o, i) => (
             <li
@@ -227,16 +231,16 @@ export function ProfilForm({ awal }) {
 
   return (
     <div className="space-y-6">
-      <Card className="border-2 border-[#1B4D2B] rounded-xl bg-white">
+      <Card className={KARTU}>
         <CardHeader className="flex flex-row items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <CardTitle className="text-lg font-bold text-[#0F2D1A]">Data ibu</CardTitle>
-            <CardDescription className="text-sm text-[#1B4D2B]/80">
+            <CardTitle className="text-xl font-extrabold text-[#0F2D1A]">Data ibu</CardTitle>
+            <CardDescription className="text-sm text-[#53665a]">
               Nama ini digunakan untuk profil keluarga.
             </CardDescription>
           </div>
-        <AvatarProfil />
-      </CardHeader>
+          <AvatarProfil />
+        </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="nama" className="block text-sm font-semibold text-[#0F2D1A]">
@@ -246,7 +250,7 @@ export function ProfilForm({ awal }) {
               id="nama"
               value={form.nama_ibu}
               onChange={(e) => ubah("nama_ibu", e.target.value)}
-              className="h-12 text-base border-2 border-[#1B4D2B] bg-white focus:ring-2 ring-[#3E8E1F] focus:border-[#3E8E1F] rounded-md px-3"
+              className="h-12 text-base border-2 border-[#1B4D2B] bg-white focus:ring-2 ring-[#3E8E1F] focus:border-[#3E8E1F] rounded-xl px-3"
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -268,18 +272,18 @@ export function ProfilForm({ awal }) {
         </CardContent>
       </Card>
 
-      <Card className="border-2 border-[#1B4D2B] rounded-xl bg-white">
+      <Card className={KARTU}>
         <CardHeader>
-          <CardTitle className="text-lg font-bold text-[#0F2D1A]">Kondisi ibu</CardTitle>
-          <CardDescription className="text-sm text-[#1B4D2B]/80">
+          <CardTitle className="text-xl font-extrabold text-[#0F2D1A]">Kondisi ibu</CardTitle>
+          <CardDescription className="text-sm text-[#53665a]">
             Pilih jika sesuai dengan kondisi saat ini.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <label className="flex items-start gap-3 rounded-xl border-2 border-[#1B4D2B] p-4">
+          <label className="flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border-2 border-[#D5E2D2] p-4 transition-colors has-[:checked]:border-[#3E8E1F] has-[:checked]:bg-[#EAF1E8]">
             <input
               type="checkbox"
-              className="mt-1 h-5 w-5 accent-[#3E8E1F]"
+              className="mt-0.5 h-6 w-6 shrink-0 accent-[#3E8E1F]"
               checked={form.ibu_hamil}
               onChange={(e) => {
                 const on = e.target.checked;
@@ -289,7 +293,7 @@ export function ProfilForm({ awal }) {
             />
             <span>
               <span className="block font-medium text-[#0F2D1A]">Ibu hamil</span>
-              <span className="text-sm text-[#1B4D2B]/80">Pilih trimester kehamilan</span>
+              <span className="text-sm text-[#53665a]">Pilih trimester kehamilan</span>
             </span>
           </label>
           {form.ibu_hamil && (
@@ -305,10 +309,10 @@ export function ProfilForm({ awal }) {
             </div>
           )}
 
-          <label className="flex items-start gap-3 rounded-xl border-2 border-[#1B4D2B] p-4">
+          <label className="flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border-2 border-[#D5E2D2] p-4 transition-colors has-[:checked]:border-[#3E8E1F] has-[:checked]:bg-[#EAF1E8]">
             <input
               type="checkbox"
-              className="mt-1 h-5 w-5 accent-[#3E8E1F]"
+              className="mt-0.5 h-6 w-6 shrink-0 accent-[#3E8E1F]"
               checked={form.ibu_menyusui}
               onChange={(e) => {
                 const on = e.target.checked;
@@ -318,7 +322,7 @@ export function ProfilForm({ awal }) {
             />
             <span>
               <span className="block font-medium text-[#0F2D1A]">Ibu menyusui</span>
-              <span className="text-sm text-[#1B4D2B]/80">Pilih usia bayi termuda</span>
+              <span className="text-sm text-[#53665a]">Pilih usia bayi termuda</span>
             </span>
           </label>
           {form.ibu_menyusui && (
@@ -336,25 +340,25 @@ export function ProfilForm({ awal }) {
         </CardContent>
       </Card>
 
-      <Card className="border-2 border-[#1B4D2B] rounded-xl bg-white">
+      <Card className={KARTU}>
         <CardHeader>
-          <CardTitle className="text-lg font-bold text-[#0F2D1A]">Anak dalam keluarga</CardTitle>
-          <CardDescription className="text-sm text-[#1B4D2B]/80">
+          <CardTitle className="text-xl font-extrabold text-[#0F2D1A]">Anak dalam keluarga</CardTitle>
+          <CardDescription className="text-sm text-[#53665a]">
             Gunakan tombol tambah atau kurang sesuai jumlah anak pada setiap kelompok usia.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {KELOMPOK_ANAK.map((k) => (
-            <div key={k.kunci} className="flex items-center justify-between gap-4 rounded-xl border-2 border-[#1B4D2B] p-4">
+            <div key={k.kunci} className="flex items-center justify-between gap-4 rounded-xl border border-[#D5E2D2] bg-[#F4F7F2] p-4">
               <div>
                 <p className="font-medium text-[#0F2D1A]">{k.label}</p>
-                <p className="text-xs text-[#1B4D2B]/80">{k.keterangan}</p>
+                <p className="text-sm text-[#53665a]">{k.keterangan}</p>
               </div>
               <Stepper nilai={form[k.kunci]} onChange={(n) => ubah(k.kunci, n)} label={k.label} />
             </div>
           ))}
 
-          <p className="text-xs text-right text-[#1B4D2B]/70">
+          <p className="text-sm text-right text-[#53665a]">
             *berdasarkan{" "}
             <a
               href="https://ditsd.kemendikdasmen.go.id/artikel/detail/isi-piringku-dengan-menu-gizi-seimbang"
@@ -368,21 +372,21 @@ export function ProfilForm({ awal }) {
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-between rounded-xl border-2 border-[#90C226]/60 bg-[#90C226]/15 p-4">
+      <div className="flex items-center justify-between rounded-2xl border border-[#90C226] bg-[#90C226]/15 p-4">
         <div>
           <p className="font-medium text-[#1B4D2B]">Total anggota keluarga</p>
-          <p className="text-sm text-[#1B4D2B]/80">Ibu dan seluruh anak yang dipilih</p>
+          <p className="text-sm text-[#53665a]">Ibu dan seluruh anak yang dipilih</p>
         </div>
         <p className="text-2xl font-bold text-[#1B4D2B]">{totalOrang} orang</p>
       </div>
 
-      <Button
-        size="lg"
-        className="w-full"
+      <PrimaryButton
+        lebarPenuh
         onClick={simpan}
-        disabled={sedangSimpan}>
+        sedangMemuat={sedangSimpan}
+      >
         {sedangSimpan ? "Menyimpan…" : "Simpan profil keluarga"}
-      </Button>
+      </PrimaryButton>
     </div>
   );
 }
