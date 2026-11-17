@@ -40,14 +40,7 @@ export function TombolHapusRiwayat({ action, tampilkanTombol }: Props) {
 
   function tutupPopup() {
     if (sedangHapus) return;
-
-    const popupSebelumnya = popup;
     setPopup(null);
-
-    // Perbarui halaman setelah popup sukses selesai.
-    if (popupSebelumnya?.type === "success") {
-      router.refresh();
-    }
   }
 
   async function konfirmasiHapus() {
@@ -67,6 +60,9 @@ export function TombolHapusRiwayat({ action, tampilkanTombol }: Props) {
       if (!hasil.ok) {
         throw new Error(hasil.pesan || "Riwayat gagal dihapus.");
       }
+
+      // Langsung perbarui data halaman setelah penghapusan berhasil.
+      router.refresh();
 
       setPopup({
         type: "success",
