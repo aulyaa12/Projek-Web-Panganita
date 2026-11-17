@@ -36,18 +36,18 @@ flowchart TD
     RAGStore --> PromptEngine[Prompt & Context Assembly]
     DBContext --> PromptEngine
     PromptEngine --> LLMEngine{Gemini Orchestrator}
-    LLMEngine -->|Primary| G1[Gemini 2.5 Flash]
-    LLMEngine -->|Fallback 1| G2[Gemini 2.5 Pro]
-    LLMEngine -->|Fallback 2| G3[Gemini 2.0 Flash]
-    LLMEngine -->|Fallback 3| G4[Gemini 1.5 Flash]
+    LLMEngine -->|Primary| G1[Gemini 3.5 Flash]
+    LLMEngine -->|Fallback 1| G2[Gemini 3.1 Flash Lite]
+    LLMEngine -->|Fallback 2| G3[Gemini 3 Flash Preview]
+    LLMEngine -->|Fallback 3| G4[Gemini Flash Latest]
     LLMEngine --> ClientStream[Response Generator + Sumber Rujukan]
     ClientStream --> UI
 ```
 
 #### Spesifikasi Model & Komponen:
-- **Model Utama LLM**: Google Gemini 2.5 Flash (`gemini-2.5-flash`).
+- **Model Utama LLM**: Google Gemini 3.5 Flash (`gemini-3.5-flash`).
   - *Alasan Pemilihan*: Kecepatan inferensi tinggi (< 1.5 detik), dukungan penalaran konteks panjang untuk dokumen RAG, efisiensi biaya, serta kemampuan memahami bahasa lokal/Indonesia percakapan secara natural.
-- **Failover Architecture**: Sistem dilengkapi mekanisme *multi-tier model fallback* otomatis. Jika model primary mengalami lonjakan kuota (*rate limit / 429*) atau timeout, sistem secara otomatis beralih ke model cadangan tanpa memutus sesi pengguna.
+- **Failover Architecture**: Sistem dilengkapi mekanisme *multi-tier model fallback* otomatis (`gemini-3.5-flash` -> `gemini-3.1-flash-lite-preview` -> `gemini-3-flash-preview` -> `gemini-flash-latest` -> `gemini-flash-lite-latest`). Jika model primary mengalami lonjakan kuota (*rate limit / 429*) atau timeout, sistem secara otomatis beralih ke model cadangan tanpa memutus sesi pengguna.
 - **Transkripsi Voice Note**: Pengguna dapat menekan tombol rekam suara. Suara dikonversi ke format base64 dan ditranskripsi ke teks secara real-time, lalu langsung dimunculkan pada kotak input (*live auto-text*).
 - **Dialect Normalizer (`lib/dialectNormalizer.js`)**: Normalisasi kosakata dialek Nusantara (Jawa: *piye*, *mangan*, *bocah*; Sunda: *kumaha*, *budak*, *tuang*; Betawi: *gimana*, *bocah*) sehingga retrieval RAG tetap presisi menemukan pasal gizi terkait.
 - **Injeksi Konteks Profil Dinamis**: Sistem membaca status kehamilan, usia anak balita, dan domisili ibu, serta menyinkronkan ucapan salam dan waktu berdasarkan zona waktu wilayah (*WIB*, *WITA*, *WIT*) secara otomatis.

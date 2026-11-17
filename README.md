@@ -4,7 +4,7 @@
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.3-black?logo=next.js)](https://nextjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20%26%20Auth-emerald?logo=supabase)](https://supabase.com/)
-[![Gemini AI](https://img.shields.io/badge/Google%20AI-Gemini%202.5%20Flash-blue?logo=google)](https://ai.google.dev/)
+[![Gemini AI](https://img.shields.io/badge/Google%20AI-Gemini%203.5%20Flash-blue?logo=google)](https://ai.google.dev/)
 [![Deployment](https://img.shields.io/badge/Vercel-Production%20Live-black?logo=vercel)](https://panganita.vercel.app/)
 
 ---
@@ -26,6 +26,7 @@ Platform ini menggabungkan:
 |---|---|---|
 | **API Documentation** | [`/api-docs`](https://panganita.vercel.app/api-docs) / [`app/api/openapi.json/route.js`](./app/api/openapi.json/route.js) | Swagger UI interaktif & spesifikasi OpenAPI 3.0.3 lengkap. |
 | **Dokumentasi Fitur AI** | [`docs/DOKUMENTASI_FITUR_AI.md`](./docs/DOKUMENTASI_FITUR_AI.md) | Penjelasan arsitektur RAG, multi-tier fallback LLM, evaluasi test cases, dan prinsip Responsible AI. |
+| **Buku Panduan Gizi RAG** | [`docs/buku_panduan_gizi_dan_olahan_panganita.pdf`](./docs/buku_panduan_gizi_dan_olahan_panganita.pdf) | Dokumen resmi rujukan basis pengetahuan (knowledge base) RAG Bu Nita AI. |
 | **Script SQL & Seed Data** | [`database/schema.sql`](./database/schema.sql) & [`database/seed.sql`](./database/seed.sql) | DDL seluruh tabel, kebijakan Row Level Security (RLS), dan seed master bahan pangan. |
 | **Panduan Setup Database** | [`database/README.md`](./database/README.md) | Panduan langkah inisialisasi database Supabase dari nol. |
 
@@ -37,7 +38,7 @@ Platform ini menggabungkan:
 - **Back-End**: Next.js Server Actions & Route Handlers (`/api/chat`, `/api/auth/whatsapp/*`, `/api/openapi.json`).
 - **Database & Storage**: Supabase PostgreSQL (dengan Row Level Security aktif) & Supabase Storage Bucket `hasil-panen`.
 - **AI & Machine Learning**:
-  - **Conversational RAG**: Google Gemini 2.5 Flash dengan sistem multi-tier failover (`gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.0-flash`, `gemini-1.5-flash`).
+  - **Conversational RAG**: Google Gemini 3.5 Flash dengan sistem multi-tier failover (`gemini-3.5-flash`, `gemini-3.1-flash-lite-preview`, `gemini-3-flash-preview`, `gemini-flash-latest`, `gemini-flash-lite-latest`).
   - **Dialect Normalization & Timezone Sync**: Deteksi dan penerjemahan kosa kata daerah serta sinkronisasi waktu wilayah (WIB/WITA/WIT).
   - **Speech-to-Text**: Pengenalan suara Voice Note audio base64.
 - **SMS / WhatsApp Gateway**: Fonnte API untuk pengiriman OTP WhatsApp.
@@ -98,8 +99,8 @@ Dokumentasi Swagger API dapat diakses di `http://localhost:3000/api-docs`.
 ---
 
 ## 👥 Tim Pengembang (Kelompok PANGANITA)
-- **Prawita Mepilianti**: AI RAG Chatbot Integration, Speech & Dialect Normalization, Swagger API Documentation, SQL Scripts & Seed Data, AI Technical Documentation.
 - **Aulya Rakhmawati**: Database Architecture, AI Computer Vision Integration, Initial Assessment API & Backend Management.
+- **Prawita Mepilianti**: AI RAG Chatbot Integration, Speech & Dialect Normalization, Swagger API Documentation, SQL Scripts & Seed Data, AI Technical Documentation.
 - **Dita Surya Kartika**: Supabase Storage Integration, WhatsApp OTP Authentication, Presentation Deck & Video Showcase.
-- **Deasy**: Product Requirement Document (PRD/BRD), User Story, User Flow, UI/UX Prototype, Registration Flow.
+- **Dessy Christina Elseba Matakupan**: Product Requirement Document (PRD/BRD), User Story, User Flow, UI/UX Prototype, Registration Flow.
 
