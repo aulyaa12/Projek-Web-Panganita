@@ -54,7 +54,7 @@ export function AppNav() {
   return (
     <>
       {/* Navbar atas: tampil pada desktop dan mobile */}
-      <header className="sticky top-0 z-50 w-full px-3 pt-3 sm:px-6 sm:pt-4">
+      <header className="sticky top-0 z-50 w-full px-3 sm:px-6">
         <div className="mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-3 rounded-full border border-[#e3ebe1] bg-white/95 px-4 shadow-[0_5px_25px_rgba(30,77,48,0.07)] backdrop-blur-xl sm:min-h-[92px] sm:px-7">
           <Link
             href="/"
@@ -158,7 +158,10 @@ export function AppNav() {
                           : "bg-[#E6B91E] shadow-[0_10px_22px_rgba(230,185,30,0.42)] group-hover:brightness-105",
                       )}
                     >
-                      <Icon aria-hidden="true" className="h-7 w-7 stroke-[2.1]" />
+                      <Icon
+                        aria-hidden="true"
+                        className="h-7 w-7 stroke-[2.1]"
+                      />
                     </span>
                     <span
                       className={cn(

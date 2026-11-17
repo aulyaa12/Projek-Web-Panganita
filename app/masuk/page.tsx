@@ -185,12 +185,12 @@ export default function HalamanMasuk() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center px-5 py-10">
+    <main className="mx-auto flex min-h-dvh w-full max-w-[24rem] flex-col justify-center px-6 py-8 sm:max-w-md sm:px-5 sm:py-10">
       <div className="mb-6 flex justify-center">
         <Logo priority />
       </div>
 
-      <div className="rounded-3xl border border-border/70 bg-card p-6 shadow-lift sm:p-8">
+      <div className="rounded-3xl border border-border/70 bg-card p-5 shadow-lift sm:p-8">
         <div className="flex items-center gap-4">
           <Image
             src="/images/maskot-bu-nita.png"
@@ -215,16 +215,30 @@ export default function HalamanMasuk() {
           </div>
         </div>
 
-        <div className="mt-7 flex items-center justify-center gap-3" aria-label={`Langkah ${step} dari 2`}>
-          <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step === 1 ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary"}`}>1</span>
+        <div
+          className="mt-7 flex items-center justify-center gap-3"
+          aria-label={`Langkah ${step} dari 2`}
+        >
+          <span
+            className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step === 1 ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary"}`}
+          >
+            1
+          </span>
           <span className="h-px w-10 bg-border" />
-          <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step === 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>2</span>
+          <span
+            className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step === 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+          >
+            2
+          </span>
         </div>
 
         {step === 1 ? (
           <form onSubmit={requestOtp} className="mt-7 space-y-4" noValidate>
             <div>
-              <label htmlFor="phone" className="mb-2 block text-sm font-semibold text-foreground">
+              <label
+                htmlFor="phone"
+                className="mb-2 block text-sm font-semibold text-foreground"
+              >
                 Nomor WhatsApp
               </label>
               <div className="flex items-center rounded-xl border border-border bg-background px-3 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15">
@@ -250,14 +264,32 @@ export default function HalamanMasuk() {
               </p>
             </div>
 
-            {error && <p className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive" role="alert">{error}</p>}
+            {error && (
+              <p
+                className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
+                role="alert"
+              >
+                {error}
+              </p>
+            )}
 
             <button
               type="submit"
-              disabled={loading || !agreed || phone.replace(/\D/g, "").length < 9}
+              disabled={
+                loading || !agreed || phone.replace(/\D/g, "").length < 9
+              }
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? <><LoaderCircle size={18} className="animate-spin" /> Mengirim kode...</> : <>Kirim kode ke WhatsApp <ArrowRight size={18} /></>}
+              {loading ? (
+                <>
+                  <LoaderCircle size={18} className="animate-spin" /> Mengirim
+                  kode...
+                </>
+              ) : (
+                <>
+                  Kirim kode ke WhatsApp <ArrowRight size={18} />
+                </>
+              )}
             </button>
 
             <label
@@ -301,13 +333,20 @@ export default function HalamanMasuk() {
         ) : (
           <div className="mt-7 space-y-5">
             <div>
-              <label htmlFor="otp-0" className="mb-3 block text-sm font-semibold text-foreground">Kode OTP</label>
+              <label
+                htmlFor="otp-0"
+                className="mb-3 block text-sm font-semibold text-foreground"
+              >
+                Kode OTP
+              </label>
               <div className="flex justify-between gap-2" onPaste={handlePaste}>
                 {digits.map((digit, index) => (
                   <input
                     key={index}
                     id={`otp-${index}`}
-                    ref={(element) => { inputsRef.current[index] = element; }}
+                    ref={(element) => {
+                      inputsRef.current[index] = element;
+                    }}
                     value={digit}
                     onChange={(event) => changeDigit(index, event.target.value)}
                     onKeyDown={(event) => handleKeyDown(index, event)}
@@ -323,7 +362,14 @@ export default function HalamanMasuk() {
               </div>
             </div>
 
-            {error && <p className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive" role="alert">{error}</p>}
+            {error && (
+              <p
+                className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
+                role="alert"
+              >
+                {error}
+              </p>
+            )}
 
             <button
               type="button"
@@ -331,14 +377,32 @@ export default function HalamanMasuk() {
               disabled={loading || code.length !== OTP_LENGTH}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? <><LoaderCircle size={18} className="animate-spin" /> {success ? "Berhasil, membuka beranda..." : "Memverifikasi..."}</> : <>Verifikasi dan masuk <ArrowRight size={18} /></>}
+              {loading ? (
+                <>
+                  <LoaderCircle size={18} className="animate-spin" />{" "}
+                  {success
+                    ? "Berhasil, membuka beranda..."
+                    : "Memverifikasi..."}
+                </>
+              ) : (
+                <>
+                  Verifikasi dan masuk <ArrowRight size={18} />
+                </>
+              )}
             </button>
 
             <div className="text-center text-xs">
               {cooldown > 0 ? (
-                <span className="text-muted-foreground" aria-live="polite">Kirim ulang kode dalam {cooldown} detik</span>
+                <span className="text-muted-foreground" aria-live="polite">
+                  Kirim ulang kode dalam {cooldown} detik
+                </span>
               ) : (
-                <button type="button" onClick={() => void requestOtp()} disabled={loading} className="font-semibold text-primary underline-offset-4 hover:underline disabled:opacity-50">
+                <button
+                  type="button"
+                  onClick={() => void requestOtp()}
+                  disabled={loading}
+                  className="font-semibold text-primary underline-offset-4 hover:underline disabled:opacity-50"
+                >
                   Kirim ulang kode
                 </button>
               )}
@@ -357,12 +421,19 @@ export default function HalamanMasuk() {
 
         <div className="mt-6 flex items-start gap-2 rounded-xl bg-muted/60 p-3 text-xs leading-relaxed text-muted-foreground">
           <ShieldCheck size={17} className="mt-0.5 shrink-0 text-primary" />
-          <p>Jangan bagikan kode OTP kepada siapa pun. PANGANITA tidak akan meminta kode verifikasi Ibu melalui telepon.</p>
+          <p>
+            Jangan bagikan kode OTP kepada siapa pun. PANGANITA tidak akan
+            meminta kode verifikasi Ibu melalui telepon.
+          </p>
         </div>
 
-        <div className="mt-5 border-t border-border/70 pt-4 text-center">
-          <Link href="/" className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground transition hover:text-foreground">
-            <ArrowLeft size={15} /> Kembali ke beranda
+        <div className="mt-5 border-t border-border/70 pt-4">
+          <Link
+            href="/"
+            className="mx-auto flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold text-[#1B4D2B] transition-colors duration-200 hover:bg-[#F1F7ED] hover:text-[#0F2D1A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F] focus-visible:ring-offset-2"
+          >
+            <ArrowLeft size={17} />
+            Kembali ke Beranda
           </Link>
         </div>
       </div>
