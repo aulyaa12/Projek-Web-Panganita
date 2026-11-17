@@ -41,6 +41,8 @@ export default function HalamanMasuk() {
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [success, setSuccess] = useState(false);
+  // Persetujuan Kebijakan Privasi serta Syarat dan Ketentuan
+  const [agreed, setAgreed] = useState(false);
   const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
   // Pengunci sinkron: mencegah verifyOtp berjalan dua kali (state loading terlalu lambat)
   const submittingRef = useRef(false);
@@ -57,6 +59,13 @@ export default function HalamanMasuk() {
   async function requestOtp(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
     if (loading) return;
+
+    // Persetujuan hanya diminta di langkah 1. Tombol "Kirim ulang kode" di langkah 2
+    // juga memanggil fungsi ini, dan persetujuan sudah diberikan sebelumnya.
+    if (step === 1 && !agreed) {
+      setError("Centang persetujuan Kebijakan Privasi serta Syarat dan Ketentuan dahulu ya, Bu.");
+      return;
+    }
 
     setError("");
     setLoading(true);
@@ -245,11 +254,49 @@ export default function HalamanMasuk() {
 
             <button
               type="submit"
-              disabled={loading || phone.replace(/\D/g, "").length < 9}
+              disabled={loading || !agreed || phone.replace(/\D/g, "").length < 9}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? <><LoaderCircle size={18} className="animate-spin" /> Mengirim kode...</> : <>Kirim kode ke WhatsApp <ArrowRight size={18} /></>}
             </button>
+
+            <label
+              htmlFor="setuju"
+              className="flex min-h-12 cursor-pointer items-start gap-3 text-xs leading-relaxed text-muted-foreground"
+            >
+              <input
+                id="setuju"
+                type="checkbox"
+                checked={agreed}
+                onChange={(event) => {
+                  setAgreed(event.target.checked);
+                  setError("");
+                }}
+                disabled={loading}
+                className="mt-0.5 h-6 w-6 shrink-0 cursor-pointer accent-primary disabled:opacity-60"
+              />
+              <span>
+                Saya telah membaca dan setuju dengan{" "}
+                <Link
+                  href="/kebijakan-privasi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-primary underline underline-offset-4"
+                >
+                  Kebijakan Privasi
+                </Link>{" "}
+                serta{" "}
+                <Link
+                  href="/syarat-dan-ketentuan"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-primary underline underline-offset-4"
+                >
+                  Syarat dan Ketentuan
+                </Link>{" "}
+                Panganita.
+              </span>
+            </label>
           </form>
         ) : (
           <div className="mt-7 space-y-5">
