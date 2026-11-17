@@ -26,6 +26,7 @@ Platform ini menggabungkan:
 |---|---|---|
 | **API Documentation** | [`/api-docs`](https://panganita.vercel.app/api-docs) / [`app/api/openapi.json/route.js`](./app/api/openapi.json/route.js) | Swagger UI interaktif & spesifikasi OpenAPI 3.0.3 lengkap. |
 | **Dokumentasi Fitur AI** | [`docs/DOKUMENTASI_FITUR_AI.md`](./docs/DOKUMENTASI_FITUR_AI.md) | Penjelasan arsitektur RAG, multi-tier fallback LLM, evaluasi test cases, dan prinsip Responsible AI. |
+| **Buku Panduan Gizi RAG** | [`docs/buku_panduan_gizi_dan_olahan_panganita.pdf`](./docs/buku_panduan_gizi_dan_olahan_panganita.pdf) | Dokumen resmi rujukan basis pengetahuan (knowledge base) RAG Bu Nita AI. |
 | **Script SQL & Seed Data** | [`database/schema.sql`](./database/schema.sql) & [`database/seed.sql`](./database/seed.sql) | DDL seluruh tabel, kebijakan Row Level Security (RLS), dan seed master bahan pangan. |
 | **Panduan Setup Database** | [`database/README.md`](./database/README.md) | Panduan langkah inisialisasi database Supabase dari nol. |
 
