@@ -23,6 +23,9 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
+import { PrimaryButton } from '@/components/PrimaryButton';
+import { SecondaryButton } from '@/components/SecondaryButton';
+
 const PESAN_AWAL =
   "Assalamu'alaikum, Ibu! Saya Bu Nita, asisten gizi Panganita. Saya siap membantu Ibu memahami gizi keluarga, bahan pangan, dan pencegahan stunting. Yuk, kita belajar bersama. Ada yang ingin Ibu tanyakan?";
 
@@ -37,13 +40,136 @@ function formatDuration(seconds = 0) {
   return `${mins}:${String(secs).padStart(2, '0')}`;
 }
 
+// Gaya kartu sama dengan halaman Beranda dan Profil.
+const KARTU =
+  'rounded-2xl border border-[#D5E2D2] bg-white shadow-[0_5px_25px_rgba(30,77,48,0.07)]';
+
+// -----------------------------------------------
+// BANTUAN SUARA BU NITA
+// -----------------------------------------------
+
+// Teks dibacakan per potongan kalimat. Potongan pendek lebih stabil di
+// Chrome Android, dan membuat Jeda/Lanjutkan serta ganti kecepatan
+// bisa jalan tanpa bergantung pada pause() bawaan browser.
+const BATAS_POTONGAN = 160;
+
+// Android memberi kode bahasa "id_ID" (garis bawah), bukan "id-ID".
+function samakanLang(lang = '') {
+  return String(lang).replace('_', '-');
+}
+
+// Hanya memilih suara Bahasa Indonesia. Bila tidak ada, mengembalikan null
+// agar browser memilih sendiri lewat lang "id-ID". Jangan jatuh ke suara
+// bahasa lain, karena suara asing yang membaca teks Indonesia terdengar aneh.
+function pilihSuaraIndonesia(daftar) {
+  const indonesia = (daftar || []).filter(v =>
+    samakanLang(v.lang).toLowerCase().startsWith('id'),
+  );
+
+  if (indonesia.length === 0) return null;
+
+  const suaraPerempuan = v =>
+    /gadis|damayanti|female|wanita|perempuan|natural|neural|online/i.test(
+      v.name,
+    );
+
+  const diAndroid =
+    typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent);
+
+  // Di Android, suara lokal (terpasang di HP) lebih andal daripada suara online.
+  if (diAndroid) {
+    return (
+      indonesia.find(v => v.localService && suaraPerempuan(v)) ||
+      indonesia.find(v => v.localService) ||
+      indonesia[0]
+    );
+  }
+
+  return (
+    indonesia.find(suaraPerempuan) ||
+    indonesia.find(v => /google|indonesia|id-id/i.test(v.name)) ||
+    indonesia[0]
+  );
+}
+
+// iPhone dan iPad (termasuk Chrome di iOS, karena semuanya memakai mesin Safari).
+function adalahIOS() {
+  if (typeof navigator === 'undefined') return false;
+
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
+}
+
+// Teks yang dibacakan dibersihkan dari simbol agar tidak terbaca aneh.
+// Teks yang tampil di layar tidak diubah, emoji tetap ada.
+// Baris Rujukan (📚) tidak dibacakan karena sudah tampil di layar.
+// Penafian Medis (⚠️) sengaja tetap dibacakan karena kalimat "bukan pengganti dokter" penting untuk didengar.
+function siapkanTeksSuara(text) {
+  return String(text)
+    .replace(/“|”/g, '')
+    .replace(/[*#_~`]/g, '')
+    .replace(/[\u{1F600}-\u{1FAFF}\u2600-\u27BF]/gu, '')
+    .replace(/📚.*$/gm, '')
+    .replace(/\bPANGANITA\b/gi, 'Panganita')
+    .replace(/\bMPASI\b/gi, 'empasi')
+    .replace(/\b1\.000\s*HPK\b/gi, 'seribu hari pertama kehidupan')
+    .replace(/\bHPK\b/gi, 'hari pertama kehidupan')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function potongKalimat(teks) {
+  const kalimat = teks
+    .split(/(?<=[.!?;:])\s+/)
+    .map(k => k.trim())
+    .filter(Boolean);
+
+  const hasil = [];
+  let gabungan = '';
+
+  for (const k of kalimat) {
+    if (k.length > BATAS_POTONGAN) {
+      if (gabungan) {
+        hasil.push(gabungan);
+        gabungan = '';
+      }
+
+      let sisa = k;
+
+      while (sisa.length > BATAS_POTONGAN) {
+        let titik = sisa.lastIndexOf(' ', BATAS_POTONGAN);
+        if (titik <= 0) titik = BATAS_POTONGAN;
+        hasil.push(sisa.slice(0, titik).trim());
+        sisa = sisa.slice(titik).trim();
+      }
+
+      gabungan = sisa;
+      continue;
+    }
+
+    if (gabungan && gabungan.length + 1 + k.length > BATAS_POTONGAN) {
+      hasil.push(gabungan);
+      gabungan = k;
+    } else {
+      gabungan = gabungan ? `${gabungan} ${k}` : k;
+    }
+  }
+
+  if (gabungan) hasil.push(gabungan);
+
+  return hasil;
+}
+
+
 function NitaAvatar({ small = false }) {
   const [imageError, setImageError] = useState(false);
 
   if (!imageError) {
     return (
       <div
-        className={`relative shrink-0 overflow-hidden rounded-full border border-[#D5EFE0] bg-[#E8F8EE] shadow-sm ${
+        className={`relative shrink-0 overflow-hidden rounded-full border border-[#D5E2D2] bg-[#EAF1E8] shadow-sm ${
           small ? 'h-9 w-9' : 'h-14 w-14'
         }`}
       >
@@ -62,7 +188,7 @@ function NitaAvatar({ small = false }) {
 
   return (
     <div
-      className={`flex shrink-0 items-center justify-center rounded-full bg-[#DDF2E5] font-bold text-[#176B49] ${
+      className={`flex shrink-0 items-center justify-center rounded-full bg-[#EAF1E8] font-bold text-[#1B4D2B] ${
         small ? 'h-9 w-9 text-xs' : 'h-14 w-14 text-lg'
       }`}
     >
@@ -91,8 +217,6 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
   const [error, setError] = useState('');
   const [showSettings, setShowSettings] = useState(false);
 
-  const [voices, setVoices] = useState([]);
-  const [voiceURI, setVoiceURI] = useState('');
   const [rate, setRate] = useState(1.0);
   const rateRef = useRef(1.0);
 
@@ -112,10 +236,12 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
   const createdAudioUrlsRef = useRef([]);
   const mountedRef = useRef(false);
   const speakingIdRef = useRef(null);
-  const currentSpeakingTextRef = useRef('');
-  const currentSpeakingCharIndexRef = useRef(0);
-  const activeUtteranceRef = useRef(null);
-  const isRestartingRateRef = useRef(false);
+  const speechRunRef = useRef(0); // penanda sesi bicara; kejadian dari sesi lama diabaikan
+  const speechQueueRef = useRef([]); // potongan kalimat yang akan dibacakan
+  const speechIndexRef = useRef(0); // potongan yang sedang atau akan dibacakan
+  const pausedRef = useRef(false);
+  const suaraMulaiRef = useRef(false);
+  const suaraTerbukaRef = useRef(false);
 
   useEffect(() => {
     setProfilLokasi(lokasi);
@@ -203,6 +329,7 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
       }
       createdAudioUrlsRef.current.forEach(url => URL.revokeObjectURL(url));
       createdAudioUrlsRef.current = [];
+      speechRunRef.current += 1;
       window.speechSynthesis?.cancel();
     };
   }, []);
@@ -228,57 +355,25 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
     }
   }, []);
 
+
   // -----------------------------------------------
-  // MEMUAT SUARA DEFAULT BU NITA (SERAGAM DI SEMUA DEVICE)
+  // MEMUAT DAFTAR SUARA
   // -----------------------------------------------
+  // Chrome Android memuat daftar suara secara bertahap. Suara dipilih saat
+  // akan berbicara (lihat bacaPotongan), jadi di sini cukup memancing
+  // pemuatannya.
 
   useEffect(() => {
-    if (!window.speechSynthesis) return;
+    const synth = window.speechSynthesis;
+    if (!synth) return;
 
-    const findBestVoice = available => {
-      if (!available || available.length === 0) return null;
+    const muat = () => synth.getVoices();
 
-      // 1. Suara Indonesia perempuan berkualitas tinggi
-      const idFemale = available.find(
-        v =>
-          v.lang.toLowerCase().startsWith('id') &&
-          /gadis|damayanti|female|wanita|perempuan|natural|neural|online/i.test(
-            v.name,
-          ),
-      );
-      if (idFemale) return idFemale;
-
-      // 2. Suara Indonesia Google/Microsoft (standar browser Android/Chrome/Edge)
-      const idStandard = available.find(
-        v =>
-          v.lang.toLowerCase().startsWith('id') &&
-          /google|indonesia|id-id/i.test(v.name),
-      );
-      if (idStandard) return idStandard;
-
-      // 3. Suara Bahasa Indonesia apa pun yang tersedia
-      const anyId = available.find(v => v.lang.toLowerCase().startsWith('id'));
-      if (anyId) return anyId;
-
-      // 4. Default browser jika suara Indonesia tidak terinstal di OS
-      return available.find(v => v.default) || available[0] || null;
-    };
-
-    const loadVoices = () => {
-      const available = window.speechSynthesis.getVoices();
-      setVoices(available);
-
-      const best = findBestVoice(available);
-      if (best) {
-        setVoiceURI(best.voiceURI);
-      }
-    };
-
-    loadVoices();
-    window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    muat();
+    synth.addEventListener('voiceschanged', muat);
 
     return () => {
-      window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+      synth.removeEventListener('voiceschanged', muat);
     };
   }, []);
 
@@ -298,11 +393,13 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
   // -----------------------------------------------
 
   const stopSpeech = useCallback(() => {
-    window.speechSynthesis?.cancel();
-
+    speechRunRef.current += 1;
+    speechQueueRef.current = [];
+    speechIndexRef.current = 0;
+    pausedRef.current = false;
     speakingIdRef.current = null;
-    currentSpeakingTextRef.current = '';
-    currentSpeakingCharIndexRef.current = 0;
+
+    window.speechSynthesis?.cancel();
 
     setSpeakingId(null);
     setPaused(false);
@@ -353,116 +450,139 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
   // MEMBACAKAN JAWABAN BU NITA
   // -----------------------------------------------
 
-  const speakText = useCallback(
-    (text, id, resumeFromChar = 0) => {
-      if (!window.speechSynthesis || !text) return;
+  // Memulai ulang pembacaan dari potongan yang sedang aktif.
+  // Setiap pemanggilan membuat "sesi" baru; kejadian dari sesi lama diabaikan.
+  function jadwalkanBaca(id, jeda = 150) {
+    const synth = window.speechSynthesis;
+    if (!synth) return 0;
 
-      // Hentikan sintesis sebelumnya
-      window.speechSynthesis.cancel();
+    speechRunRef.current += 1;
+    const runId = speechRunRef.current;
 
-      const cleanSpeechText = String(text)
-        .replace(/“|”/g, '')
-        .replace(/[*#_~`]/g, '')
-        .replace(/[\u{1F600}-\u{1FAFF}\u2600-\u27BF]/gu, '')
-        .replace(/📚.*$/gm, '')
-        .replace(/⚠️.*$/gm, '')
-        .replace(/\bPANGANITA\b/gi, 'Panganita')
-        .replace(/\bMPASI\b/gi, 'empasi')
-        .replace(/\b1\.000\s*HPK\b/gi, 'seribu hari pertama kehidupan')
-        .replace(/\bHPK\b/gi, 'hari pertama kehidupan')
-        .replace(/\s+/g, ' ')
-        .trim();
+    synth.cancel();
 
-      currentSpeakingTextRef.current = cleanSpeechText;
-      const speechToPlay =
-        resumeFromChar > 0 && resumeFromChar < cleanSpeechText.length
-          ? cleanSpeechText.slice(resumeFromChar).trim()
-          : cleanSpeechText;
+    // Jeda singkat agar pembatalan sebelumnya tuntas (penting di Chrome Android).
+    setTimeout(() => bacaPotongan(runId, id), jeda);
 
-      currentSpeakingCharIndexRef.current = resumeFromChar;
+    return runId;
+  }
 
-      const utterance = new SpeechSynthesisUtterance(
-        speechToPlay || 'Halo Ibu, Bu Nita siap mendengarkan.',
+  // Membacakan satu potongan, lalu lanjut ke potongan berikutnya.
+  function bacaPotongan(runId, id) {
+    const synth = window.speechSynthesis;
+
+    if (!synth || runId !== speechRunRef.current) return;
+
+    const potongan = speechQueueRef.current[speechIndexRef.current];
+
+    // Semua potongan sudah selesai dibacakan.
+    if (!potongan) {
+      speakingIdRef.current = null;
+      speechQueueRef.current = [];
+      speechIndexRef.current = 0;
+      pausedRef.current = false;
+
+      if (mountedRef.current) {
+        setSpeakingId(null);
+        setPaused(false);
+      }
+      return;
+    }
+
+    const suara = pilihSuaraIndonesia(synth.getVoices());
+    const utterance = new SpeechSynthesisUtterance(potongan);
+
+    utterance.lang = suara ? samakanLang(suara.lang) : 'id-ID';
+    if (suara) utterance.voice = suara;
+
+    const kecepatan = Number(rateRef.current);
+    utterance.rate = Math.max(
+      0.5,
+      Math.min(2.0, Number.isFinite(kecepatan) ? kecepatan : 1.0),
+    );
+    utterance.pitch = 1;
+    utterance.volume = 1;
+
+    utterance.onstart = () => {
+      if (runId === speechRunRef.current) suaraMulaiRef.current = true;
+    };
+
+    utterance.onend = () => {
+      if (!mountedRef.current || runId !== speechRunRef.current) return;
+
+      speechIndexRef.current += 1;
+      bacaPotongan(runId, id);
+    };
+
+    utterance.onerror = event => {
+      if (!mountedRef.current || runId !== speechRunRef.current) return;
+
+      // cancel() memicu error 'interrupted' atau 'canceled'; itu bukan kegagalan.
+      if (event.error === 'interrupted' || event.error === 'canceled') return;
+
+      stopSpeech();
+      setError(
+        'Suara Bu Nita belum bisa diputar. Coba naikkan volume media atau muat ulang halaman.',
       );
-      activeUtteranceRef.current = utterance;
+    };
 
-      const selectedVoice = voices.find(voice => voice.voiceURI === voiceURI);
+    synth.speak(utterance);
+  }
 
-      const activeRate =
-        typeof rateRef.current === 'number' && !isNaN(rateRef.current)
-          ? rateRef.current
-          : rate || 1.0;
+  // iOS hanya mengizinkan suara jika speak() pertama dipanggil langsung saat
+  // layar disentuh (tanpa menunggu timer). Utterance kosong bervolume 0 ini
+  // "membuka kunci" suara; pembacaan sebenarnya menyusul beberapa saat kemudian.
+  function bukaKunciSuara() {
+    const synth = window.speechSynthesis;
 
-      utterance.lang = selectedVoice?.lang || 'id-ID';
-      utterance.voice = selectedVoice || null;
-      utterance.rate = Math.max(0.5, Math.min(2.0, activeRate));
-      utterance.pitch = 1.03;
-      utterance.volume = 1;
+    if (!synth || suaraTerbukaRef.current || !adalahIOS()) return;
 
-      utterance.onboundary = event => {
-        if (event.name === 'word' || typeof event.charIndex === 'number') {
-          currentSpeakingCharIndexRef.current =
-            resumeFromChar + (event.charIndex || 0);
-        }
-      };
+    const pembuka = new SpeechSynthesisUtterance(' ');
+    pembuka.volume = 0;
+    synth.speak(pembuka);
 
-      utterance.onstart = () => {
-        if (!mountedRef.current) return;
+    suaraTerbukaRef.current = true;
+  }
 
-        speakingIdRef.current = id;
+  function mulaiBicara(text, id) {
+    if (!window.speechSynthesis) {
+      setError('Browser Ibu belum mendukung suara Bu Nita.');
+      return;
+    }
 
-        setSpeakingId(id);
-        setPaused(false);
-      };
+    bukaKunciSuara();
 
-      utterance.onend = () => {
-        if (!mountedRef.current) return;
+    const potongan = potongKalimat(siapkanTeksSuara(text));
+    if (potongan.length === 0) return;
 
-        // Jika sedang restart karena pergantian speed, jangan reset state
-        if (isRestartingRateRef.current) {
-          isRestartingRateRef.current = false;
-          return;
-        }
+    speechQueueRef.current = potongan;
+    speechIndexRef.current = 0;
+    speakingIdRef.current = id;
+    pausedRef.current = false;
+    suaraMulaiRef.current = false;
 
-        speakingIdRef.current = null;
-        currentSpeakingTextRef.current = '';
-        currentSpeakingCharIndexRef.current = 0;
-        activeUtteranceRef.current = null;
+    setSpeakingId(id);
+    setPaused(false);
 
-        setSpeakingId(null);
-        setPaused(false);
-      };
+    const runId = jadwalkanBaca(id);
 
-      utterance.onerror = err => {
-        if (!mountedRef.current) return;
+    // Penjaga: bila 6 detik tidak ada suara sama sekali, hentikan dan beri tahu Ibu.
+    setTimeout(() => {
+      if (
+        !mountedRef.current ||
+        runId !== speechRunRef.current ||
+        suaraMulaiRef.current ||
+        pausedRef.current
+      ) {
+        return;
+      }
 
-        // Pada Chrome/Safari, cancel() memicu event error 'interrupted' atau 'canceled'
-        if (isRestartingRateRef.current) {
-          return;
-        }
-
-        if (err.error === 'interrupted' || err.error === 'canceled') {
-          return;
-        }
-
-        speakingIdRef.current = null;
-        currentSpeakingTextRef.current = '';
-        currentSpeakingCharIndexRef.current = 0;
-        activeUtteranceRef.current = null;
-
-        setSpeakingId(null);
-        setPaused(false);
-      };
-
-      // Beri delay 30ms agar pembatalan sintesis lama di engine browser tuntas
-      setTimeout(() => {
-        if (window.speechSynthesis) {
-          window.speechSynthesis.speak(utterance);
-        }
-      }, 30);
-    },
-    [voices, voiceURI, rate],
-  );
+      stopSpeech();
+      setError(
+        'Suara belum bisa diputar di HP ini. Pastikan volume media menyala dan suara Bahasa Indonesia sudah terpasang di pengaturan HP.',
+      );
+    }, 6000);
+  }
 
   // -----------------------------------------------
   // PUTAR ULANG SUARA
@@ -474,23 +594,33 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
       return;
     }
 
-    speakText(message.content, message.id);
+    stopUserAudio();
+    mulaiBicara(message.content, message.id);
   }
 
   // -----------------------------------------------
   // JEDA / LANJUTKAN SUARA
   // -----------------------------------------------
+  // pause() dan resume() bawaan browser tidak andal di Chrome Android.
+  // Jeda = hentikan sesi sekarang dan ingat potongan terakhir.
+  // Lanjutkan = baca ulang dari potongan itu.
 
   function togglePause() {
-    if (!window.speechSynthesis) return;
+    if (!window.speechSynthesis || !speakingIdRef.current) return;
 
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
+    if (pausedRef.current) {
+      pausedRef.current = false;
       setPaused(false);
-    } else if (window.speechSynthesis.speaking) {
-      window.speechSynthesis.pause();
-      setPaused(true);
+      jadwalkanBaca(speakingIdRef.current, 100);
+      return;
     }
+
+    pausedRef.current = true;
+    setPaused(true);
+
+    // Naikkan penanda sesi agar kejadian dari suara yang dibatalkan diabaikan.
+    speechRunRef.current += 1;
+    window.speechSynthesis.cancel();
   }
 
   // -----------------------------------------------
@@ -503,21 +633,21 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
     setRate(next);
     rateRef.current = next;
 
-    localStorage.setItem('nita_voice_rate', String(next));
+    try {
+      localStorage.setItem('nita_voice_rate', String(next));
+    } catch {
+      // Penyimpanan peramban tidak tersedia; pengaturan hanya berlaku sementara.
+    }
 
-    // Jika sedang berbicara, lanjutkan kalimat secara seamless dengan speed baru
-    if (speakingIdRef.current && currentSpeakingTextRef.current) {
-      isRestartingRateRef.current = true;
-      const activeId = speakingIdRef.current;
-      const fullText = currentSpeakingTextRef.current;
-      const charIndex = currentSpeakingCharIndexRef.current || 0;
-
-      speakText(fullText, activeId, charIndex);
+    // Sedang berbicara: lanjutkan dari potongan yang sama dengan kecepatan baru.
+    // Sedang dijeda: kecepatan baru dipakai saat Ibu menekan Lanjutkan.
+    if (speakingIdRef.current && !pausedRef.current) {
+      jadwalkanBaca(speakingIdRef.current);
     }
   }
 
   function playSample() {
-    speakText(
+    mulaiBicara(
       'Halo Ibu, apa kabar hari ini? Saya Bu Nita. Yuk, kita belajar bersama tentang gizi keluarga.',
       'sample',
     );
@@ -984,27 +1114,21 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
   // -----------------------------------------------
 
   return (
-    <main className="min-h-[calc(100dvh-80px)] bg-[#E5FFF0] text-[#173D30]">
-      <div className="mx-auto max-w-6xl px-3 pb-[220px] pt-5 sm:px-6 lg:pb-36">
+    <div className="text-[#0F2D1A]">
+      <div className="mx-auto w-full max-w-[850px] pb-28 lg:pb-16">
         {/* PROFIL BU NITA */}
 
-        <section className="mb-6 flex items-center gap-3 rounded-2xl border border-white bg-white px-4 py-4 shadow-sm sm:px-6">
+        <section
+          className={`${KARTU} mb-5 flex items-center gap-3 px-4 py-4 sm:px-6`}
+        >
           <NitaAvatar />
 
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-base font-bold text-[#164532] sm:text-lg">
-                Bu Nita AI
-              </h1>
+            <h1 className="text-xl font-extrabold leading-tight text-[#0F2D1A]">
+              Bu Nita AI
+            </h1>
 
-              <span className="rounded-full bg-[#D3F2E1] px-2.5 py-1 text-[10px] font-semibold text-[#176C4B]">
-                Teman Gizi Keluarga
-              </span>
-            </div>
-
-            <p className="mt-1 text-xs text-[#718B7D]">
-              Panduan Pangan & Gizi Keluarga
-            </p>
+            <p className="text-sm text-[#53665a]">Teman Gizi Keluarga</p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -1013,18 +1137,21 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
               onClick={newConversation}
               disabled={loading || historyLoading}
               title="Percakapan baru"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EFF9F2] text-[#26724E] hover:bg-[#DDF3E5] disabled:opacity-40"
+              aria-label="Mulai percakapan baru"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-[#EAF1E8] text-[#1B4D2B] transition-all hover:bg-[#D5E2D2] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F] disabled:opacity-40"
             >
-              <Plus size={19} />
+              <Plus aria-hidden="true" size={22} />
             </button>
 
             <button
               type="button"
               onClick={() => setShowSettings(!showSettings)}
               title="Pengaturan suara"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EFF9F2] text-[#26724E] hover:bg-[#DDF3E5]"
+              aria-label="Pengaturan suara"
+              aria-expanded={showSettings}
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-[#EAF1E8] text-[#1B4D2B] transition-all hover:bg-[#D5E2D2] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F]"
             >
-              <Settings2 size={19} />
+              <Settings2 aria-hidden="true" size={22} />
             </button>
           </div>
         </section>
@@ -1032,49 +1159,52 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
         {/* PENGATURAN SUARA */}
 
         {showSettings && (
-          <section className="mb-6 rounded-2xl border border-[#CFEBDC] bg-white p-5 shadow-sm">
-            <div className="mb-4 flex items-center justify-between">
+          <section className={`${KARTU} mb-5 p-5`}>
+            <div className="mb-4 flex items-start justify-between gap-3">
               <div>
-                <h2 className="font-bold text-[#164532]">Pengaturan Suara</h2>
-                <p className="text-xs text-[#54806B]">
-                  Suara Bu Nita otomatis disesuaikan secara seragam pada
-                  perangkat Ibu.
+                <h2 className="text-xl font-extrabold text-[#0F2D1A]">
+                  Pengaturan Suara
+                </h2>
+                <p className="mt-1 text-sm text-[#53665a]">
+                  Atur seberapa cepat Bu Nita berbicara.
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={() => setShowSettings(false)}
-                className="text-[#54806B] hover:text-[#164532]"
+                aria-label="Tutup pengaturan suara"
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-[#53665a] transition-colors hover:bg-[#EAF1E8] hover:text-[#0F2D1A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F]"
               >
-                <X size={19} />
+                <X aria-hidden="true" size={22} />
               </button>
             </div>
 
             <div className="mb-5">
-              <div className="mb-2.5 flex justify-between text-sm">
-                <span className="font-medium text-[#164532]">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-base font-semibold text-[#0F2D1A]">
                   Kecepatan bicara
                 </span>
 
-                <span className="rounded-md bg-[#EFF9F2] px-2 py-0.5 text-xs font-bold text-[#176B49]">
+                <span className="rounded-lg bg-[#EAF1E8] px-3 py-1 text-sm font-bold text-[#1B4D2B]">
                   {rate}x
                 </span>
               </div>
 
-              {/* Pilihan tombol preset kecepatan */}
               <div className="grid grid-cols-5 gap-2">
                 {[0.5, 1.0, 1.25, 1.5, 2.0].map(preset => {
                   const isSelected = rate === preset;
+
                   return (
                     <button
                       key={preset}
                       type="button"
                       onClick={() => changeRate(preset)}
-                      className={`rounded-xl py-2 text-xs font-semibold transition-all ${
+                      aria-pressed={isSelected}
+                      className={`min-h-12 rounded-xl text-base font-bold transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F] ${
                         isSelected
-                          ? 'bg-[#105A40] text-white shadow-sm ring-2 ring-[#105A40]/30'
-                          : 'border border-[#D3E8DB] bg-white text-[#2B5441] hover:bg-[#F2FAF5]'
+                          ? 'bg-[#1B4D2B] text-white shadow-md shadow-[#1B4D2B]/20'
+                          : 'border-2 border-[#D5E2D2] bg-white text-[#1B4D2B] hover:border-[#1B4D2B]'
                       }`}
                     >
                       {preset}x
@@ -1084,28 +1214,28 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={playSample}
-                className="rounded-xl bg-[#105A40] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#0c4430]"
-              >
-                <span className="flex items-center gap-2">
-                  <Play size={15} />
-                  Coba dengarkan suara
-                </span>
-              </button>
-            </div>
+            <PrimaryButton ikon={Play} lebarPenuh onClick={playSample}>
+              Coba dengarkan suara
+            </PrimaryButton>
           </section>
         )}
 
         {/* RIWAYAT PESAN */}
 
-        <section className="mx-auto flex max-w-[850px] flex-col gap-5">
+        <section className="flex flex-col gap-5">
           {historyLoading && (
-            <div className="flex items-center justify-center gap-2 py-12 text-sm text-[#54806B]">
-              <LoaderCircle size={18} className="animate-spin" />
-              Memuat percakapan...
+            <div
+              role="status"
+              aria-live="polite"
+              className="flex items-center justify-center gap-2 py-12 text-base font-semibold text-[#1B4D2B]"
+            >
+              <LoaderCircle
+                aria-hidden="true"
+                size={22}
+                strokeWidth={2.5}
+                className="animate-spin text-[#3E8E1F]"
+              />
+              Memuat percakapan…
             </div>
           )}
 
@@ -1129,8 +1259,8 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
                     }`}
                   >
                     <p
-                      className={`mb-1.5 px-1 text-[11px] font-medium ${
-                        isUser ? 'text-right text-[#327354]' : 'text-[#54806B]'
+                      className={`mb-1.5 px-1 text-sm font-semibold ${
+                        isUser ? 'text-right text-[#1B4D2B]' : 'text-[#53665a]'
                       }`}
                     >
                       {isUser ? 'Ibu' : 'Bu Nita'}
@@ -1139,12 +1269,12 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
                     <div
                       className={`rounded-[20px] px-4 py-3.5 shadow-sm sm:px-5 sm:py-4 ${
                         isUser
-                          ? 'rounded-br-[5px] bg-[#105A40] text-white'
-                          : 'rounded-bl-[5px] border border-[#E4F0E8] bg-white text-[#294A3B]'
+                          ? 'rounded-br-[5px] bg-[#1B4D2B] text-white'
+                          : 'rounded-bl-[5px] border border-[#D5E2D2] bg-white text-[#0F2D1A]'
                       }`}
                     >
                       {isUser && message.voiceNote?.audioUrl && (
-                        <div className="mb-2.5 flex items-center gap-2.5 rounded-xl bg-white/15 px-3 py-2 text-white">
+                        <div className="mb-3 flex items-center gap-3 rounded-xl bg-white/15 px-3 py-2 text-white">
                           <button
                             type="button"
                             onClick={() => toggleUserAudio(message)}
@@ -1153,20 +1283,28 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
                                 ? 'Jeda rekaman suara'
                                 : 'Putar rekaman suara'
                             }
-                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-[#105A40] shadow-sm transition hover:bg-green-50"
+                            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-[#1B4D2B] shadow-sm transition-all hover:bg-[#EAF1E8] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD23F]"
                           >
                             {playingUserId === message.id ? (
-                              <Pause size={14} fill="currentColor" />
+                              <Pause
+                                aria-hidden="true"
+                                size={20}
+                                fill="currentColor"
+                              />
                             ) : (
                               <Play
-                                size={14}
+                                aria-hidden="true"
+                                size={20}
                                 fill="currentColor"
                                 className="ml-0.5"
                               />
                             )}
                           </button>
 
-                          <div className="flex flex-1 items-center gap-[3px]">
+                          <div
+                            aria-hidden="true"
+                            className="flex flex-1 items-center gap-[3px]"
+                          >
                             {[10, 16, 8, 20, 13, 18, 9, 15, 20, 11, 16, 9].map(
                               (h, idx) => (
                                 <span
@@ -1182,19 +1320,19 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
                             )}
                           </div>
 
-                          <span className="shrink-0 text-[11px] font-semibold text-green-50">
-                            Suara Ibu • {message.voiceNote.duration}
+                          <span className="shrink-0 text-sm font-semibold text-white">
+                            {message.voiceNote.duration}
                           </span>
                         </div>
                       )}
 
-                      <p className="select-text cursor-text whitespace-pre-wrap break-words text-[14px] leading-7 sm:text-sm">
+                      <p className="select-text cursor-text whitespace-pre-wrap break-words text-base leading-7">
                         {message.content}
                       </p>
 
                       <p
-                        className={`mt-2 text-right text-[10px] ${
-                          isUser ? 'text-green-100/80' : 'text-[#9AAFA3]'
+                        className={`mt-2 text-right text-xs ${
+                          isUser ? 'text-white/80' : 'text-[#53665a]'
                         }`}
                       >
                         {message.time}
@@ -1202,48 +1340,40 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
                     </div>
 
                     {!isUser && (
-                      <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <SecondaryButton
+                          ukuran="default"
+                          ikon={active ? Square : Play}
                           onClick={() => toggleAudio(message)}
-                          className="flex items-center gap-2 rounded-full border border-[#BBDDC9] bg-white px-3.5 py-2 text-xs font-semibold text-[#176B49] shadow-sm hover:bg-[#EAF8EF]"
                         >
-                          {active ? (
-                            <Square size={13} fill="currentColor" />
-                          ) : (
-                            <Play size={14} fill="currentColor" />
-                          )}
-
                           {active ? 'Hentikan' : 'Dengarkan'}
-                        </button>
+                        </SecondaryButton>
 
                         {active && (
-                          <button
-                            type="button"
+                          <SecondaryButton
+                            ukuran="default"
+                            ikon={paused ? Play : Pause}
                             onClick={togglePause}
-                            className="flex items-center gap-1 rounded-full border border-[#BBDDC9] bg-white px-3 py-2 text-xs text-[#176B49]"
                           >
-                            {paused ? <Play size={13} /> : <Pause size={13} />}
-
                             {paused ? 'Lanjutkan' : 'Jeda'}
-                          </button>
+                          </SecondaryButton>
                         )}
 
-                        <span className="text-[10px] text-[#799889]">
-                          <Volume2 size={12} className="mr-1 inline" />
+                        <span className="inline-flex items-center gap-1 text-sm text-[#53665a]">
+                          <Volume2 aria-hidden="true" size={16} />
                           Suara Bu Nita
                         </span>
 
                         {message.sources?.length > 0 && (
-                          <details className="text-xs text-[#54806B]">
-                            <summary className="cursor-pointer">
+                          <details className="w-full text-sm text-[#1B4D2B]">
+                            <summary className="flex min-h-12 cursor-pointer items-center font-semibold">
                               Sumber informasi
                             </summary>
 
-                            <div className="mt-2 space-y-1.5 rounded-xl border border-[#D4ECDD] bg-white px-3 py-2 shadow-sm">
+                            <div className="mt-1 space-y-2 rounded-xl border border-[#D5E2D2] bg-white px-4 py-3 shadow-sm">
                               {message.sources.map((source, index) => (
                                 <div key={index} className="leading-relaxed">
-                                  <p className="font-medium text-[#173D30]">
+                                  <p className="font-medium text-[#0F2D1A]">
                                     •{' '}
                                     {typeof source === 'string'
                                       ? source
@@ -1253,7 +1383,7 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
                                   </p>
                                   {typeof source === 'object' &&
                                     source?.source && (
-                                      <p className="pl-3 text-[11px] text-[#608B77]">
+                                      <p className="pl-3 text-sm text-[#53665a]">
                                         {source.source}
                                       </p>
                                     )}
@@ -1275,9 +1405,18 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
             <div className="flex items-center gap-3">
               <NitaAvatar small />
 
-              <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-xs text-[#54806B] shadow-sm">
-                <LoaderCircle size={16} className="animate-spin" />
-                Bu Nita sedang menyiapkan jawaban...
+              <div
+                role="status"
+                aria-live="polite"
+                className="flex items-center gap-2 rounded-2xl border border-[#D5E2D2] bg-white px-4 py-3 text-sm font-medium text-[#1B4D2B] shadow-sm"
+              >
+                <LoaderCircle
+                  aria-hidden="true"
+                  size={18}
+                  strokeWidth={2.5}
+                  className="animate-spin text-[#3E8E1F]"
+                />
+                Bu Nita sedang menyiapkan jawaban…
               </div>
             </div>
           )}
@@ -1285,26 +1424,43 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
           {/* PESAN ERROR */}
 
           {error && (
-            <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
-              <AlertCircle size={16} className="mt-0.5 shrink-0" />
+            <div
+              role="alert"
+              className="flex items-start gap-3 rounded-2xl border-2 border-[#E6B91E] bg-[#FFF8DB] p-4 text-[#3b2f00]"
+            >
+              <AlertCircle
+                aria-hidden="true"
+                size={20}
+                className="mt-0.5 shrink-0"
+              />
 
-              <p className="flex-1">{error}</p>
+              <p className="flex-1 text-base">{error}</p>
 
-              <button type="button" onClick={() => setError('')}>
-                <X size={14} />
+              <button
+                type="button"
+                onClick={() => setError('')}
+                aria-label="Tutup pesan"
+                className="-m-2 flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-[#E6B91E]/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4D2B]"
+              >
+                <X aria-hidden="true" size={20} />
               </button>
             </div>
           )}
 
-          <div ref={bottomRef} />
+          {/* Penanda akhir percakapan. scroll-mb memberi ruang agar pesan
+              terakhir tidak tertutup kolom ketik yang menempel di bawah. */}
+          <div ref={bottomRef} className="scroll-mb-52 lg:scroll-mb-32" />
         </section>
       </div>
 
-      {/* KOLOM INPUT CHAT */}
+      {/* KOLOM INPUT CHAT
+          Mobile: menempel sampai dasar layar (di belakang navigasi bawah),
+          sehingga tidak ada celah tempat tulisan lain terlihat saat digulir.
+          Padding bawah menyisakan ruang untuk navigasi bawah. */}
 
-      <footer className="pointer-events-auto fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+100px)] z-40 border-t border-[#D0EBDD] bg-white/95 px-3 py-3 backdrop-blur-lg sm:px-6 sm:py-4 lg:bottom-0">
+      <footer className="pointer-events-auto fixed inset-x-0 bottom-0 z-40 border-t border-[#D5E2D2] bg-white px-3 pb-[calc(env(safe-area-inset-bottom,0px)+100px)] pt-3 sm:px-6 sm:pt-4 lg:pb-4">
         {listening && (
-          <div className="mx-auto mb-2 flex max-w-[850px] items-center justify-between rounded-xl border border-red-200 bg-red-50 px-3.5 py-1.5 text-xs text-red-700">
+          <div className="mx-auto mb-2 flex max-w-[850px] items-center justify-between rounded-xl border border-red-200 bg-red-50 px-3.5 py-1.5 text-sm text-red-700">
             <div className="flex items-center gap-2 font-semibold">
               <span className="h-2.5 w-2.5 animate-ping rounded-full bg-red-500" />
               <span>Merekam suara • {formatDuration(recordingSeconds)}</span>
@@ -1313,7 +1469,7 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
             <button
               type="button"
               onClick={cancelRecording}
-              className="rounded-lg px-2 py-0.5 font-semibold text-red-700 hover:bg-red-100"
+              className="min-h-12 rounded-lg px-3 font-semibold text-red-700 hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
             >
               ✕ Batal
             </button>
@@ -1324,7 +1480,7 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
           onSubmit={sendMessage}
           className="mx-auto flex max-w-[850px] items-center gap-2.5"
         >
-          <div className="flex min-h-[52px] flex-1 items-center rounded-full border border-[#C3E7D2] bg-[#F7FCF8] px-4 focus-within:border-[#23845A] focus-within:ring-2 focus-within:ring-[#DDF4E6]">
+          <div className="flex min-h-14 flex-1 items-center rounded-full border-2 border-[#1B4D2B] bg-white px-4 focus-within:border-[#3E8E1F] focus-within:ring-2 focus-within:ring-[#3E8E1F]/30">
             <textarea
               rows={1}
               value={input}
@@ -1342,11 +1498,11 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
               disabled={loading || historyLoading}
               placeholder={
                 listening
-                  ? 'Silakan bicara (teks otomatis muncul) atau tekan kirim...'
-                  : 'Ketik pesan atau tekan mikrofon untuk bicara...'
+                  ? 'Silakan bicara, lalu tekan kirim…'
+                  : 'Ketik pesan atau tekan mikrofon…'
               }
               aria-label="Tulis pesan untuk Bu Nita"
-              className="pointer-events-auto min-h-[38px] max-h-24 flex-1 resize-none touch-manipulation select-text bg-transparent py-2.5 text-base text-[#294A3B] outline-none placeholder:text-[#91AA9C]"
+              className="pointer-events-auto max-h-24 min-h-[40px] flex-1 resize-none touch-manipulation select-text bg-transparent py-2.5 text-base text-[#0F2D1A] outline-none placeholder:text-[#53665a]"
             />
 
             <button
@@ -1356,13 +1512,17 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
               aria-label={
                 listening ? 'Hentikan dan kirim suara' : 'Aktifkan mikrofon'
               }
-              className={`ml-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition ${
+              className={`-mr-2 ml-1 flex h-12 w-12 shrink-0 items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F] ${
                 listening
                   ? 'animate-pulse bg-red-100 text-red-600'
-                  : 'text-[#176B49] hover:bg-[#E3F5E9]'
+                  : 'text-[#1B4D2B] hover:bg-[#EAF1E8]'
               }`}
             >
-              {listening ? <MicOff size={19} /> : <Mic size={19} />}
+              {listening ? (
+                <MicOff aria-hidden="true" size={22} />
+              ) : (
+                <Mic aria-hidden="true" size={22} />
+              )}
             </button>
           </div>
 
@@ -1372,20 +1532,21 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
               (!input.trim() && !listening) || loading || historyLoading
             }
             aria-label={listening ? 'Kirim rekaman suara' : 'Kirim pesan'}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#105A40] text-white shadow-md hover:bg-[#0A4632] disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#1B4D2B] text-white shadow-md shadow-[#1B4D2B]/25 transition-all hover:bg-[#3E8E1F] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFD23F] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {loading ? (
-              <LoaderCircle size={19} className="animate-spin" />
+              <LoaderCircle
+                aria-hidden="true"
+                size={22}
+                strokeWidth={2.5}
+                className="animate-spin"
+              />
             ) : (
-              <Send size={18} />
+              <Send aria-hidden="true" size={22} />
             )}
           </button>
         </form>
-
-        <p className="mt-2 text-center text-[10px] text-[#91AA9C]">
-          Bu Nita AI • Asisten Gizi Keluarga PANGANITA
-        </p>
       </footer>
-    </main>
+    </div>
   );
 }
