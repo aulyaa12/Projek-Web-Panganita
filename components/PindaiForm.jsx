@@ -236,7 +236,7 @@ export function PindaiForm({ bahan }) {
   const hasilPencarian = useMemo(() => {
     const q = normalisasiLabel(kataKunci);
 
-    if (!q) return bahan.slice(0, 6);
+    if (!q) return bahan;
 
     return bahan
       .filter((item) => normalisasiLabel(item.nama).includes(q))
@@ -835,7 +835,7 @@ export function PindaiForm({ bahan }) {
                 className="inline-flex min-h-9 items-center gap-2 rounded-lg text-sm font-bold text-[#1B4D2B] transition hover:text-[#0F2D1A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#90C226]"
               >
                 <ArrowLeft size={18} strokeWidth={2.5} />
-                <span className="font-bold">Kembali </span>
+                <span className="font-bold">Kembali ke Scan Panen</span>
               </button>
 
               <span className="shrink-0 rounded-full bg-[#EAF3E5] px-3 py-1.5 text-xs font-bold text-[#1B4D2B]">
@@ -852,10 +852,8 @@ export function PindaiForm({ bahan }) {
             </div>
 
             <div className="mt-2 grid grid-cols-2 gap-2 text-xs font-semibold">
-              <span className="min-w-0 text-[11px] text-[#1B4D2B] sm:text-xs">
-                01 · Pindai Panen
-              </span>
-              <span className="min-w-0 text-right text-[11px] text-[#1B4D2B] sm:text-xs">
+              <span className="text-[#1B4D2B]">01 · Identifikasi Pangan</span>
+              <span className="text-right text-[#1B4D2B]">
                 02 · Rekomendasi
               </span>
             </div>
@@ -868,7 +866,7 @@ export function PindaiForm({ bahan }) {
             </div>
 
             <h2 className="text-xl font-bold tracking-tight text-[#0F2D1A] sm:text-2xl">
-              Identifikasi Hasil Panen
+              Identifikasi Hasil Panen Ibu
             </h2>
 
             <p className="mt-1 max-w-xl text-sm leading-relaxed text-slate-600">
@@ -885,10 +883,8 @@ export function PindaiForm({ bahan }) {
             </div>
 
             <div className="mt-2 grid grid-cols-2 gap-2 text-xs font-semibold">
-              <span className="min-w-0 text-[11px] text-[#1B4D2B] sm:text-xs">
-                01 · Pindai Panen
-              </span>
-              <span className="min-w-0 text-right text-[11px] text-slate-500 sm:text-xs">
+              <span className="text-[#1B4D2B]">01 · Identifikasi Pangan</span>
+              <span className="text-right text-slate-500">
                 02 · Rekomendasi
               </span>
             </div>
@@ -898,18 +894,16 @@ export function PindaiForm({ bahan }) {
         {tahap === 1 && (
           <div className="flex w-full flex-col gap-6">
             {/* FOTO */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-              <div className="mb-5 flex items-start justify-between gap-3">
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="mb-5 flex items-start justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 sm:text-base">
-                    Foto Hasil Panen
-                  </h3>
-                  <p className="mt-1 text-xs leading-relaxed text-slate-600 sm:text-sm">
-                    Gunakan foto yang jelas dan cukup terang.
+                  <h3 className="font-bold text-slate-900">Foto Hasil Panen</h3>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Gunakan foto yang jelas dan tidak terlalu gelap.
                   </p>
                 </div>
 
-                <div className="shrink-0 rounded-xl bg-[#90C226]/20 p-3 text-[#1B4D2B]">
+                <div className="rounded-xl bg-[#90C226]/20 p-3 text-[#1B4D2B]">
                   <Camera size={21} />
                 </div>
               </div>
@@ -932,7 +926,7 @@ export function PindaiForm({ bahan }) {
                   <img
                     src={previewFoto}
                     alt="Foto hasil panen"
-                    className="h-[200px] w-full object-contain sm:h-[280px]"
+                    className="h-[310px] w-full object-contain"
                   />
 
                   <button
@@ -946,7 +940,13 @@ export function PindaiForm({ bahan }) {
                   </button>
                 </div>
               ) : (
-                <div className="flex min-h-[215px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#90C226] bg-[#90C226]/10 px-4 text-center sm:min-h-[280px] sm:px-5">
+                <button
+                  type="button"
+                  onClick={() => inputGaleriRef.current?.click()}
+                  disabled={sedangDeteksi}
+                  aria-label="Pilih foto hasil panen dari galeri"
+                  className="flex min-h-[310px] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#90C226] bg-[#90C226]/10 px-5 text-center transition hover:bg-[#90C226]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F] disabled:cursor-not-allowed disabled:opacity-60"
+                >
                   <div className="mb-4 rounded-2xl bg-white p-4 text-[#1B4D2B] shadow-sm">
                     <Upload size={28} />
                   </div>
@@ -959,37 +959,37 @@ export function PindaiForm({ bahan }) {
                     Ambil foto hasil panen atau pilih gambar yang sudah
                     tersimpan.
                   </p>
-                </div>
+                </button>
               )}
 
-              <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
+              <div className="mt-4 grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={bukaKamera}
                   disabled={kameraMemuat || sedangDeteksi}
-                  className="flex min-h-12 min-w-0 items-center justify-center gap-1 whitespace-nowrap rounded-xl border border-[#3E8E1F] bg-[#3E8E1F] px-1.5 text-[10px] font-bold text-white transition hover:border-[#1B4D2B] hover:bg-[#1B4D2B] disabled:cursor-wait disabled:opacity-70 sm:gap-2 sm:px-3 sm:text-sm"
+                  className="flex h-12 items-center justify-center gap-2 rounded-xl border border-[#3E8E1F] bg-[#3E8E1F] text-sm font-semibold text-white transition hover:border-[#1B4D2B] hover:bg-[#1B4D2B] disabled:cursor-wait disabled:opacity-70"
                 >
                   {kameraMemuat ? (
                     <LoaderCircle size={17} className="animate-spin" />
                   ) : (
-                    <Camera size={17} className="shrink-0" />
+                    <Camera size={17} />
                   )}
-                  {kameraMemuat ? "Membuka..." : "Ambil Foto"}
+                  {kameraMemuat ? "Membuka kamera..." : "Ambil Foto"}
                 </button>
 
                 <button
                   type="button"
                   onClick={() => inputGaleriRef.current?.click()}
                   disabled={sedangDeteksi}
-                  className="flex min-h-12 min-w-0 items-center justify-center gap-1 whitespace-nowrap rounded-xl border border-[#90C226] bg-[#90C226] px-1.5 text-[10px] font-bold text-[#0F2D1A] transition hover:bg-[#A7D43A] disabled:cursor-not-allowed disabled:opacity-60 sm:gap-2 sm:px-3 sm:text-sm"
+                  className="flex h-12 items-center justify-center gap-2 rounded-xl border border-[#E6B91E] bg-[#E6B91E] text-sm font-semibold text-[#0F2D1A] transition hover:border-[#FFD23F] hover:bg-[#FFD23F] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <Upload size={17} className="shrink-0" />
-                  <span>Unggah Foto</span>
+                  <Upload size={17} />
+                  Unggah Foto
                 </button>
               </div>
 
               <p className="mt-3 text-center text-xs text-slate-600">
-                JPG, PNG, WebP · Maks. 8 MB
+                JPG, PNG atau WebP · Maksimal 8 MB
               </p>
 
               <button
@@ -1144,7 +1144,7 @@ export function PindaiForm({ bahan }) {
                 {panganTerpilih && (
                   <div className="mt-3 flex items-center gap-2 text-xs font-medium text-emerald-700">
                     <CheckCircle2 size={15} />
-                    Data gizi ditemukan
+                    Data pangan terhubung dengan katalog gizi PANGANITA
                   </div>
                 )}
 
@@ -1163,7 +1163,7 @@ export function PindaiForm({ bahan }) {
                   </div>
 
                   {panganTerpilih ? (
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <div className="grid grid-cols-3 gap-2">
                       {NUTRISI.map((nutrisi) => {
                         const value = panganTerpilih[nutrisi.key];
 
@@ -1307,7 +1307,7 @@ export function PindaiForm({ bahan }) {
                 <div className="mt-5">
                   <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
                     <CalendarDays size={16} className="text-emerald-700" />
-                    Cadangan untuk Berapa Hari?
+                    Cadangan Pangan untuk Berapa Hari?
                   </label>
 
                   <div className="flex items-center gap-3 rounded-xl border border-slate-200 p-3">
@@ -1363,7 +1363,7 @@ export function PindaiForm({ bahan }) {
                     </>
                   ) : (
                     <>
-                      Pembagian Panen Tumbuh100
+                      Atur Hasil Panen
                       <ArrowRight size={18} />
                     </>
                   )}
@@ -1402,12 +1402,13 @@ export function PindaiForm({ bahan }) {
                   </h3>
 
                   <p className="mt-1 text-sm text-slate-600">
-                    {berat} kg . {formatRupiah(harga)}/Kg · Cadangan {hari} Hari
+                    {berat} kg · {formatRupiah(harga)} per kg · Cadangan {hari}{" "}
+                    hari
                   </p>
                 </div>
 
                 <div className="rounded-xl bg-emerald-50 px-4 py-3">
-                  <p className="text-xs text-emerald-700">Anggota Keluarga</p>
+                  <p className="text-xs text-emerald-700">Anggota keluarga</p>
                   <p className="text-xl font-bold text-emerald-900">
                     {hasilHitung.jumlahOrang} orang
                   </p>
@@ -1418,21 +1419,21 @@ export function PindaiForm({ bahan }) {
             {/* KEBUTUHAN */}
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <p className="text-xs text-slate-600">Kebutuhan Cadangan</p>
+                <p className="text-xs text-slate-600">Kebutuhan cadangan</p>
                 <p className="mt-2 text-xl font-bold text-slate-900">
                   {formatKg(hasilHitung.kebutuhanCadanganKg)}
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <p className="text-xs text-slate-600">Total Hasil Panen</p>
+                <p className="text-xs text-slate-600">Total hasil panen</p>
                 <p className="mt-2 text-xl font-bold text-slate-900">
                   {formatKg(berat)}
                 </p>
               </div>
 
               <div className="rounded-xl border border-slate-200 bg-white p-4">
-                <p className="text-xs text-slate-600">Kekurangan Pangan</p>
+                <p className="text-xs text-slate-600">Kekurangan pangan</p>
                 <p
                   className={`mt-2 text-xl font-bold ${
                     hasilHitung.kekuranganKg > 0
@@ -1462,20 +1463,22 @@ export function PindaiForm({ bahan }) {
               <div className="mb-5">
                 <div className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[#1B4D2B]">
                   <Sparkles size={17} />
-                  Analisis Tumbuh100
+                  Analisis PANGANITA
                 </div>
 
                 <h2 className="text-2xl font-bold tracking-tight text-[#0F2D1A] sm:text-3xl">
-                  Pilih Pembagian Panen
+                  Pilih pembagian panen
                 </h2>
 
                 <p className="mt-2 max-w-2xl text-base font-medium leading-relaxed text-[#1B4D2B]">
-                  Sistem merekomendasikan beberapa alternatif pembagian panen
+                  Bandingkan tiga alternatif berikut. Setiap pilihan memiliki
+                  pertimbangan yang berbeda. Ibu menentukan keputusan akhir
+                  sesuai keadaan keluarga.
                 </p>
               </div>
 
               {alternatifTerurut.length > 0 ? (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 lg:grid-cols-3">
                   {alternatifTerurut.map((item, index) => {
                     const konfigurasi = REKOMENDASI[item.keputusan];
                     if (!konfigurasi) return null;
@@ -1498,24 +1501,21 @@ export function PindaiForm({ bahan }) {
                           </span>
                         </div>
 
-                        {/* IKON DAN JUDUL: SEJAJAR DI MOBILE DAN DESKTOP */}
-                        <div className="mt-4 flex min-w-0 items-center gap-3">
-                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#90C226] text-[#0F2D1A]">
-                            <Icon size={21} />
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <h3 className="text-lg font-bold leading-tight text-[#0F2D1A] sm:text-xl">
-                              {konfigurasi.judul}
-                            </h3>
-
-                            <p className="mt-1 break-words text-xs font-bold leading-snug text-[#1B4D2B] sm:text-sm">
-                              {konfigurasi.subjudul}
-                            </p>
-                          </div>
+                        {/* ICON */}
+                        <div className="mt-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#90C226] text-[#0F2D1A]">
+                          <Icon size={21} />
                         </div>
 
-                        <p className="mt-4 text-sm font-medium leading-relaxed text-[#0F2D1A] sm:min-h-[92px] sm:text-base">
+                        {/* JUDUL DAN PENJELASAN */}
+                        <h3 className="mt-4 text-xl font-bold text-[#0F2D1A]">
+                          {konfigurasi.judul}
+                        </h3>
+
+                        <p className="mt-1 text-sm font-bold text-[#1B4D2B]">
+                          {konfigurasi.subjudul}
+                        </p>
+
+                        <p className="mt-4 min-h-[92px] text-base font-medium leading-relaxed text-[#0F2D1A]">
                           {konfigurasi.penjelasan}
                         </p>
 
@@ -1633,9 +1633,10 @@ export function PindaiForm({ bahan }) {
             {/* INFORMASI EDUKASI PANGANITA */}
             <div className="flex gap-3 rounded-xl border border-[#DCE9D8] bg-[#F1F7ED] p-4">
               <Leaf size={20} className="mt-0.5 shrink-0 text-[#1B4D2B]" />
-              <p className="text-justify text-base font-medium leading-relaxed text-[#0F2D1A]">
-                Menyisihkan hasil panen membantu Ibu memenuhi kebutuhan gizi
-                keluarga. Rekomendasi ini hanya panduan,
+              <p className="text-base font-medium leading-relaxed text-[#0F2D1A]">
+                Menyisihkan sebagian hasil panen membantu keluarga
+                mempertimbangkan ketersediaan pangan di rumah. Rekomendasi ini
+                merupakan alat bantu keputusan,
                 <strong> bukan kewajiban.</strong>{" "}
                 <strong>Ibu tetap menentukan pilihan akhir.</strong>
               </p>
@@ -1643,7 +1644,8 @@ export function PindaiForm({ bahan }) {
 
             {/* KETERANGAN PENYIMPANAN */}
             <p className="text-center text-sm font-medium leading-relaxed text-[#1B4D2B]">
-              Pilihan Ibu disimpan dalam riwayat panen.
+              Setelah Ibu memilih, hanya alternatif yang dipilih akan disimpan
+              sebagai keputusan pada riwayat panen.
             </p>
           </section>
         )}
