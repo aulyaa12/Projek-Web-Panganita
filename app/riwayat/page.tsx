@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { TombolHapusRiwayat } from "@/components/riwayat/TombolHapusRiwayat";
+import { TanggalWaktuLokal } from "@/components/riwayat/TanggalWaktuLokal";
 
 import { createClient } from "@/lib/supabase/server";
 import { muatProfilSaya } from "@/lib/data/referensi";
@@ -21,19 +22,6 @@ type Baris = {
   hari_disediakan: number;
   dibuat_pada: string;
 };
-
-// Format tanggal dan waktu sesuai zona WITA.
-function tanggalWaktu(nilai: string) {
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Makassar",
-    hourCycle: "h23",
-  }).format(new Date(nilai));
-}
 
 export default async function HalamanRiwayat() {
   const profil = await muatProfilSaya();
@@ -136,7 +124,7 @@ export default async function HalamanRiwayat() {
                 </p>
 
                 <p className="mt-1 text-sm font-medium text-[#1B4D2B]">
-                  {tanggalWaktu(r.dibuat_pada)}
+                  <TanggalWaktuLokal nilai={r.dibuat_pada} />
                 </p>
               </div>
 
@@ -145,6 +133,7 @@ export default async function HalamanRiwayat() {
               </span>
             </div>
 
+            {/* INFORMASI PANEN */}
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="rounded-lg bg-[#F1F7ED] p-3">
                 <p className="text-xs font-semibold text-[#1B4D2B]">Panen</p>
@@ -177,6 +166,7 @@ export default async function HalamanRiwayat() {
               </div>
             </div>
 
+            {/* PENDAPATAN */}
             <div className="border-t border-[#DCE9D8] pt-3 text-right">
               <p className="text-xs font-semibold text-[#1B4D2B]">
                 Perkiraan Pendapatan
