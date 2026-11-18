@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 
 import { AppNav } from "@/components/AppNav";
+import { BackToTop } from "@/components/BackToTop";
 import { Footer } from "@/components/Footer";
 import { PublicNav } from "@/components/PublicNav";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,9 @@ export function NavKondisional({ children }) {
         {!pathname.startsWith("/masuk") && !tanpaFooter(pathname) && (
           <Footer tampilDiMobile={pathname === "/"} />
         )}
+
+        {/* Tombol kembali ke atas: hanya di landing page */}
+        {pathname === "/" && <BackToTop className="bottom-6" />}
       </>
     );
   }
@@ -76,6 +80,12 @@ export function NavKondisional({ children }) {
 
       {/* Footer disembunyikan di halaman tertentu, misalnya chatbot */}
       {!tanpaFooter(pathname) && <Footer ruangNavBawah />}
+
+      {/* Tombol kembali ke atas: hanya di halaman chat Bu Nita.
+          Posisinya dinaikkan agar tidak menutupi kolom ketik dan navigasi bawah. */}
+      {pathname === "/bu-nita" && (
+        <BackToTop className="bottom-48 lg:bottom-28" />
+      )}
     </>
   );
 }

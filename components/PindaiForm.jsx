@@ -236,7 +236,7 @@ export function PindaiForm({ bahan }) {
   const hasilPencarian = useMemo(() => {
     const q = normalisasiLabel(kataKunci);
 
-    if (!q) return bahan.slice(0, 6);
+    if (!q) return bahan;
 
     return bahan
       .filter((item) => normalisasiLabel(item.nama).includes(q))
@@ -946,7 +946,13 @@ export function PindaiForm({ bahan }) {
                   </button>
                 </div>
               ) : (
-                <div className="flex min-h-[215px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#90C226] bg-[#90C226]/10 px-4 text-center sm:min-h-[280px] sm:px-5">
+                <button
+                  type="button"
+                  onClick={() => inputGaleriRef.current?.click()}
+                  disabled={sedangDeteksi}
+                  aria-label="Pilih foto hasil panen dari galeri"
+                  className="flex min-h-[310px] w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#90C226] bg-[#90C226]/10 px-5 text-center transition hover:bg-[#90C226]/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F] disabled:cursor-not-allowed disabled:opacity-60"
+                >
                   <div className="mb-4 rounded-2xl bg-white p-4 text-[#1B4D2B] shadow-sm">
                     <Upload size={28} />
                   </div>
@@ -959,7 +965,7 @@ export function PindaiForm({ bahan }) {
                     Ambil foto hasil panen atau pilih gambar yang sudah
                     tersimpan.
                   </p>
-                </div>
+                </button>
               )}
 
               <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-3">
@@ -967,7 +973,7 @@ export function PindaiForm({ bahan }) {
                   type="button"
                   onClick={bukaKamera}
                   disabled={kameraMemuat || sedangDeteksi}
-                  className="flex min-h-12 min-w-0 items-center justify-center gap-1 whitespace-nowrap rounded-xl border border-[#3E8E1F] bg-[#3E8E1F] px-1.5 text-[10px] font-bold text-white transition hover:border-[#1B4D2B] hover:bg-[#1B4D2B] disabled:cursor-wait disabled:opacity-70 sm:gap-2 sm:px-3 sm:text-sm"
+                  className="flex min-h-12 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-[#3E8E1F] bg-[#3E8E1F] px-2 text-sm font-bold text-white transition hover:border-[#1B4D2B] hover:bg-[#1B4D2B] disabled:cursor-wait disabled:opacity-70 sm:gap-2 sm:px-3"
                 >
                   {kameraMemuat ? (
                     <LoaderCircle size={17} className="animate-spin" />
@@ -981,7 +987,7 @@ export function PindaiForm({ bahan }) {
                   type="button"
                   onClick={() => inputGaleriRef.current?.click()}
                   disabled={sedangDeteksi}
-                  className="flex min-h-12 min-w-0 items-center justify-center gap-1 whitespace-nowrap rounded-xl border border-[#90C226] bg-[#90C226] px-1.5 text-[10px] font-bold text-[#0F2D1A] transition hover:bg-[#A7D43A] disabled:cursor-not-allowed disabled:opacity-60 sm:gap-2 sm:px-3 sm:text-sm"
+                  className="flex min-h-12 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-[#E6B91E] bg-[#E6B91E] px-2 text-sm font-bold text-[#0F2D1A] transition hover:border-[#FFD23F] hover:bg-[#FFD23F] disabled:cursor-not-allowed disabled:opacity-60 sm:gap-2 sm:px-3"
                 >
                   <Upload size={17} className="shrink-0" />
                   <span>Unggah Foto</span>
@@ -1363,7 +1369,7 @@ export function PindaiForm({ bahan }) {
                     </>
                   ) : (
                     <>
-                      Pembagian Panen Tumbuh100
+                      Pembagian Panen Tumbuh1000
                       <ArrowRight size={18} />
                     </>
                   )}
@@ -1402,7 +1408,8 @@ export function PindaiForm({ bahan }) {
                   </h3>
 
                   <p className="mt-1 text-sm text-slate-600">
-                    {berat} kg . {formatRupiah(harga)}/Kg · Cadangan {hari} Hari
+                    {berat} kg · {formatRupiah(harga)} per kg · Cadangan {hari}{" "}
+                    hari
                   </p>
                 </div>
 
@@ -1462,7 +1469,7 @@ export function PindaiForm({ bahan }) {
               <div className="mb-5">
                 <div className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[#1B4D2B]">
                   <Sparkles size={17} />
-                  Analisis Tumbuh100
+                  Analisis Tumbuh1000
                 </div>
 
                 <h2 className="text-2xl font-bold tracking-tight text-[#0F2D1A] sm:text-3xl">

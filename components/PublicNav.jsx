@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -27,6 +27,11 @@ export function PublicNav() {
   const [activeSection, setActiveSection] = useState("judul-hero");
   const [menuTerbuka, setMenuTerbuka] = useState(false);
 
+  // Kunci penanda aktif selama smooth scroll akibat klik menu.
+  const kunciScrollRef = useRef(false);
+  const kunciTimerRef = useRef(null);
+  const kunciLepasRef = useRef(null);
+
   // Memantau section homepage yang sedang dibaca.
   useEffect(() => {
     if (!isHomepage) return;
@@ -35,6 +40,7 @@ export function PublicNav() {
 
     function updateActiveSection() {
       if (frame !== null) return;
+      if (kunciScrollRef.current) return;
 
       frame = window.requestAnimationFrame(() => {
         frame = null;
@@ -49,7 +55,7 @@ export function PublicNav() {
 
           if (!target) continue;
 
-          if (target.getBoundingClientRect().top <= offset) {
+          if (target.getBoundingClientRect().top <= offset + 2) {
             current = item.id;
           } else {
             break;
@@ -74,6 +80,10 @@ export function PublicNav() {
 
       if (frame !== null) {
         window.cancelAnimationFrame(frame);
+      }
+
+      if (kunciLepasRef.current) {
+        kunciLepasRef.current();
       }
     };
   }, [isHomepage]);
@@ -115,6 +125,36 @@ export function PublicNav() {
     const offset = (header?.getBoundingClientRect().height ?? 88) + 16;
 
     const posisi = target.getBoundingClientRect().top + window.scrollY - offset;
+
+    // Bersihkan kunci sebelumnya bila klik dilakukan berulang cepat.
+    if (kunciLepasRef.current) {
+      kunciLepasRef.current();
+    }
+
+    // Kunci penanda selama smooth scroll; lepas setelah scroll berhenti.
+    kunciScrollRef.current = true;
+
+    function lepasKunci() {
+      kunciScrollRef.current = false;
+      window.removeEventListener("scroll", jadwalLepas);
+
+      if (kunciTimerRef.current) {
+        clearTimeout(kunciTimerRef.current);
+        kunciTimerRef.current = null;
+      }
+
+      kunciLepasRef.current = null;
+    }
+
+    function jadwalLepas() {
+      if (kunciTimerRef.current) clearTimeout(kunciTimerRef.current);
+      kunciTimerRef.current = setTimeout(lepasKunci, 120);
+    }
+
+    kunciLepasRef.current = lepasKunci;
+
+    window.addEventListener("scroll", jadwalLepas, { passive: true });
+    jadwalLepas(); // jaga-jaga bila tidak ada scroll sama sekali
 
     window.scrollTo({
       top: Math.max(0, posisi),
