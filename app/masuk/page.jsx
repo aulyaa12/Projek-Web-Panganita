@@ -1,31 +1,42 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent, type ClipboardEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, LoaderCircle, MessageCircle, Phone, ShieldCheck, Smartphone } from "lucide-react";
+import {
+  ArrowLeft,
+  LogIn,
+  MessageCircle,
+  Phone,
+  Send,
+  ShieldCheck,
+  Smartphone,
+} from "lucide-react";
+
 import { Logo } from "@/components/Logo";
+import { PrimaryButton } from "@/components/PrimaryButton";
+import { SecondaryButton } from "@/components/SecondaryButton";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const OTP_LENGTH = 6;
 const emptyDigits = () => Array.from({ length: OTP_LENGTH }, () => "");
 
-type ApiResponse = {
-  error?: string;
-  retryAfter?: number;
-  resendAfter?: number;
-  tokenHash?: string;
-  redirectTo?: string;
-};
+// Gaya kartu sama dengan halaman Beranda dan Profil.
+const KARTU =
+  "rounded-3xl border border-[#D5E2D2] bg-white shadow-[0_5px_25px_rgba(30,77,48,0.07)]";
 
-async function postJson(url: string, body: Record<string, string>) {
+const TAUTAN_PERSETUJUAN =
+  "font-semibold text-[#1B4D2B] underline underline-offset-4 hover:text-[#3E8E1F]";
+
+async function postJson(url, body) {
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  const data = (await response.json().catch(() => ({}))) as ApiResponse;
+  const data = await response.json().catch(() => ({}));
   return { ok: response.ok, data };
 }
 
@@ -34,16 +45,16 @@ export default function HalamanMasuk() {
   // Pakai klien yang sama dengan AppNav dan halaman lain, supaya sesi tersimpan
   // di tempat yang sama dan logout benar-benar menghapusnya.
   const [supabase] = useState(() => createClient());
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState(1);
   const [phone, setPhone] = useState("");
-  const [digits, setDigits] = useState<string[]>(emptyDigits);
+  const [digits, setDigits] = useState(emptyDigits);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [success, setSuccess] = useState(false);
   // Persetujuan Kebijakan Privasi serta Syarat dan Ketentuan
   const [agreed, setAgreed] = useState(false);
-  const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
+  const inputsRef = useRef([]);
   // Pengunci sinkron: mencegah verifyOtp berjalan dua kali (state loading terlalu lambat)
   const submittingRef = useRef(false);
 
@@ -56,7 +67,7 @@ export default function HalamanMasuk() {
     return () => window.clearTimeout(timer);
   }, [cooldown]);
 
-  async function requestOtp(event?: FormEvent<HTMLFormElement>) {
+  async function requestOtp(event) {
     event?.preventDefault();
     if (loading) return;
 
@@ -152,14 +163,14 @@ export default function HalamanMasuk() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, step]);
 
-  function changeDigit(index: number, value: string) {
+  function changeDigit(index, value) {
     const digit = value.replace(/\D/g, "").slice(-1);
     setDigits((current) => current.map((item, itemIndex) => (itemIndex === index ? digit : item)));
     if (digit && index < OTP_LENGTH - 1) inputsRef.current[index + 1]?.focus();
     setError("");
   }
 
-  function handleKeyDown(index: number, event: KeyboardEvent<HTMLInputElement>) {
+  function handleKeyDown(index, event) {
     if (event.key === "Backspace" && !digits[index] && index > 0) {
       inputsRef.current[index - 1]?.focus();
     } else if (event.key === "ArrowLeft" && index > 0) {
@@ -169,7 +180,7 @@ export default function HalamanMasuk() {
     }
   }
 
-  function handlePaste(event: ClipboardEvent<HTMLDivElement>) {
+  function handlePaste(event) {
     const pasted = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, OTP_LENGTH);
     if (!pasted) return;
     event.preventDefault();
@@ -184,65 +195,87 @@ export default function HalamanMasuk() {
     setDigits(emptyDigits());
   }
 
+  const pesanError = error && (
+    <p
+      role="alert"
+      className="rounded-xl border border-red-200 bg-red-50 p-3 text-base font-medium leading-relaxed text-red-800"
+    >
+      {error}
+    </p>
+  );
+
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[24rem] flex-col justify-center px-6 py-8 sm:max-w-md sm:px-5 sm:py-10">
-      <div className="mb-6 flex justify-center">
+    <main className="mx-auto flex min-h-[calc(100dvh-6rem)] w-full max-w-md flex-col justify-center px-3 pb-8 pt-4 sm:min-h-[calc(100dvh-7.5rem)] sm:px-6 sm:pb-12 sm:pt-6">
+      {/*
+        Area logo: lebar penuh mengikuti kartu. Komponen Logo tetap mengatur
+        sendiri logo lengkap atau ikon saja sesuai lebar layar; di sini hanya
+        tinggi gambarnya yang diperbesar.
+      */}
+      <div className="mb-5 flex w-full justify-center sm:mb-6 [&_img]:h-[4.5rem] [&_img]:w-auto [&_img]:max-w-full sm:[&_img]:h-24">
         <Logo priority />
       </div>
 
-      <div className="rounded-3xl border border-border/70 bg-card p-5 shadow-lift sm:p-8">
-        <div className="flex items-center gap-4">
+      <div className={cn(KARTU, "p-4 sm:p-8")}>
+        {/* Kepala kartu */}
+        <div className="flex items-center gap-3 sm:gap-4">
           <Image
             src="/images/maskot-bu-nita.png"
             alt="Bu Nita menyapa"
             width={420}
             height={420}
             priority
-            className="h-20 w-20 shrink-0 object-contain"
+            className="h-16 w-16 shrink-0 object-contain sm:h-20 sm:w-20"
           />
-          <div>
-            <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold tracking-wide text-primary">
-              <MessageCircle size={14} /> MASUK DENGAN WHATSAPP
+          <div className="min-w-0">
+            <p className="mb-1 flex items-center gap-1.5 text-sm font-bold text-[#3E8E1F]">
+              <MessageCircle aria-hidden="true" className="h-4 w-4 shrink-0" />
+              Masuk dengan WhatsApp
             </p>
-            <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
+            <h1 className="text-2xl font-extrabold leading-tight text-[#0F2D1A]">
               {step === 1 ? "Selamat datang, Ibu" : "Verifikasi nomor Ibu"}
             </h1>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {step === 1
-                ? "Masuk untuk mengatur hasil panen keluarga."
-                : `Masukkan kode 6 digit yang dikirim ke WhatsApp ${phone}.`}
-            </p>
           </div>
         </div>
 
+        <p className="mt-3 text-base leading-relaxed text-[#53665a]">
+          {step === 1
+            ? "Masuk untuk mengatur hasil panen keluarga."
+            : `Masukkan kode 6 digit yang dikirim ke WhatsApp ${phone}.`}
+        </p>
+
+        {/* Penanda langkah */}
         <div
-          className="mt-7 flex items-center justify-center gap-3"
+          className="mt-5 flex items-center justify-center gap-3"
           aria-label={`Langkah ${step} dari 2`}
         >
           <span
-            className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step === 1 ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary"}`}
+            className={cn(
+              "flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold",
+              step === 1 ? "bg-[#1B4D2B] text-white" : "bg-[#EAF1E8] text-[#1B4D2B]",
+            )}
           >
             1
           </span>
-          <span className="h-px w-10 bg-border" />
+          <span aria-hidden="true" className="h-0.5 w-10 rounded-full bg-[#D5E2D2]" />
           <span
-            className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${step === 2 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            className={cn(
+              "flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold",
+              step === 2 ? "bg-[#1B4D2B] text-white" : "bg-[#F4F7F2] text-[#53665a]",
+            )}
           >
             2
           </span>
         </div>
 
         {step === 1 ? (
-          <form onSubmit={requestOtp} className="mt-7 space-y-4" noValidate>
+          <form onSubmit={requestOtp} className="mt-6 space-y-4" noValidate>
+            {/* 1. Isi nomor */}
             <div>
-              <label
-                htmlFor="phone"
-                className="mb-2 block text-sm font-semibold text-foreground"
-              >
+              <label htmlFor="phone" className="mb-2 block text-base font-semibold text-[#0F2D1A]">
                 Nomor WhatsApp
               </label>
-              <div className="flex items-center rounded-xl border border-border bg-background px-3 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15">
-                <Phone size={18} className="shrink-0 text-muted-foreground" />
+              <div className="flex h-14 items-center rounded-xl border-2 border-[#1B4D2B] bg-white px-3 transition focus-within:border-[#3E8E1F] focus-within:ring-2 focus-within:ring-[#3E8E1F]/30">
+                <Phone aria-hidden="true" className="h-5 w-5 shrink-0 text-[#53665a]" />
                 <input
                   id="phone"
                   type="tel"
@@ -256,45 +289,18 @@ export default function HalamanMasuk() {
                   }}
                   required
                   disabled={loading}
-                  className="min-w-0 flex-1 bg-transparent px-3 py-3 text-sm text-foreground outline-none placeholder:text-muted-foreground/70 disabled:opacity-60"
+                  className="h-full min-w-0 flex-1 bg-transparent px-3 text-lg text-[#0F2D1A] outline-none placeholder:text-[#53665a]/60 disabled:opacity-60"
                 />
               </div>
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              <p className="mt-2 text-sm leading-relaxed text-[#53665a]">
                 Pastikan nomor WhatsApp aktif dan dapat menerima pesan.
               </p>
             </div>
 
-            {error && (
-              <p
-                className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
-                role="alert"
-              >
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={
-                loading || !agreed || phone.replace(/\D/g, "").length < 9
-              }
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading ? (
-                <>
-                  <LoaderCircle size={18} className="animate-spin" /> Mengirim
-                  kode...
-                </>
-              ) : (
-                <>
-                  Kirim kode ke WhatsApp <ArrowRight size={18} />
-                </>
-              )}
-            </button>
-
+            {/* 2. Centang persetujuan */}
             <label
               htmlFor="setuju"
-              className="flex min-h-12 cursor-pointer items-start gap-3 text-xs leading-relaxed text-muted-foreground"
+              className="flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border-2 border-[#D5E2D2] p-3 text-sm leading-relaxed text-[#26352b] transition-colors has-[:checked]:border-[#3E8E1F] has-[:checked]:bg-[#EAF1E8] sm:p-4 sm:text-base"
             >
               <input
                 id="setuju"
@@ -305,7 +311,7 @@ export default function HalamanMasuk() {
                   setError("");
                 }}
                 disabled={loading}
-                className="mt-0.5 h-6 w-6 shrink-0 cursor-pointer accent-primary disabled:opacity-60"
+                className="mt-0.5 h-6 w-6 shrink-0 cursor-pointer accent-[#3E8E1F] disabled:opacity-60"
               />
               <span>
                 Saya telah membaca dan setuju dengan{" "}
@@ -313,7 +319,7 @@ export default function HalamanMasuk() {
                   href="/kebijakan-privasi"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-semibold text-primary underline underline-offset-4"
+                  className={TAUTAN_PERSETUJUAN}
                 >
                   Kebijakan Privasi
                 </Link>{" "}
@@ -322,24 +328,34 @@ export default function HalamanMasuk() {
                   href="/syarat-dan-ketentuan"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-semibold text-primary underline underline-offset-4"
+                  className={TAUTAN_PERSETUJUAN}
                 >
                   Syarat dan Ketentuan
                 </Link>{" "}
                 Panganita.
               </span>
             </label>
+
+            {pesanError}
+
+            {/* 3. Kirim kode */}
+            <PrimaryButton
+              type="submit"
+              lebarPenuh
+              ikon={Send}
+              sedangMemuat={loading}
+              disabled={!agreed || phone.replace(/\D/g, "").length < 9}
+            >
+              {loading ? "Mengirim kode..." : "Kirim kode ke WhatsApp"}
+            </PrimaryButton>
           </form>
         ) : (
-          <div className="mt-7 space-y-5">
+          <div className="mt-6 space-y-5">
             <div>
-              <label
-                htmlFor="otp-0"
-                className="mb-3 block text-sm font-semibold text-foreground"
-              >
+              <label htmlFor="otp-0" className="mb-3 block text-base font-semibold text-[#0F2D1A]">
                 Kode OTP
               </label>
-              <div className="flex justify-between gap-2" onPaste={handlePaste}>
+              <div className="flex justify-between gap-1.5 sm:gap-2" onPaste={handlePaste}>
                 {digits.map((digit, index) => (
                   <input
                     key={index}
@@ -356,44 +372,31 @@ export default function HalamanMasuk() {
                     maxLength={1}
                     disabled={loading}
                     aria-label={`Digit ${index + 1} dari ${OTP_LENGTH}`}
-                    className="h-12 w-full min-w-0 rounded-xl border border-border bg-background text-center text-xl font-bold text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
+                    className="h-14 w-full min-w-0 rounded-xl border-2 border-[#1B4D2B] bg-white text-center text-2xl font-bold text-[#0F2D1A] outline-none transition focus:border-[#3E8E1F] focus:ring-2 focus:ring-[#3E8E1F]/30 disabled:opacity-60"
                   />
                 ))}
               </div>
             </div>
 
-            {error && (
-              <p
-                className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive"
-                role="alert"
-              >
-                {error}
-              </p>
-            )}
+            {pesanError}
 
-            <button
-              type="button"
+            <PrimaryButton
+              lebarPenuh
+              ikon={LogIn}
+              sedangMemuat={loading}
+              disabled={code.length !== OTP_LENGTH}
               onClick={() => void verifyOtp()}
-              disabled={loading || code.length !== OTP_LENGTH}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? (
-                <>
-                  <LoaderCircle size={18} className="animate-spin" />{" "}
-                  {success
-                    ? "Berhasil, membuka beranda..."
-                    : "Memverifikasi..."}
-                </>
-              ) : (
-                <>
-                  Verifikasi dan masuk <ArrowRight size={18} />
-                </>
-              )}
-            </button>
+              {loading
+                ? success
+                  ? "Berhasil, membuka beranda..."
+                  : "Memverifikasi..."
+                : "Verifikasi dan masuk"}
+            </PrimaryButton>
 
-            <div className="text-center text-xs">
+            <div className="text-center text-base">
               {cooldown > 0 ? (
-                <span className="text-muted-foreground" aria-live="polite">
+                <span className="text-[#53665a]" aria-live="polite">
                   Kirim ulang kode dalam {cooldown} detik
                 </span>
               ) : (
@@ -401,40 +404,36 @@ export default function HalamanMasuk() {
                   type="button"
                   onClick={() => void requestOtp()}
                   disabled={loading}
-                  className="font-semibold text-primary underline-offset-4 hover:underline disabled:opacity-50"
+                  className="inline-flex min-h-12 items-center justify-center rounded-xl px-4 font-semibold text-[#1B4D2B] underline underline-offset-4 transition-colors hover:text-[#3E8E1F] disabled:opacity-50"
                 >
                   Kirim ulang kode
                 </button>
               )}
             </div>
 
-            <button
-              type="button"
-              onClick={backToPhone}
+            <SecondaryButton
+              lebarPenuh
+              ikon={Smartphone}
               disabled={loading}
-              className="mx-auto flex items-center gap-2 text-xs font-medium text-muted-foreground transition hover:text-foreground disabled:opacity-50"
+              onClick={backToPhone}
             >
-              <Smartphone size={14} /> Gunakan nomor WhatsApp lain
-            </button>
+              Gunakan nomor WhatsApp lain
+            </SecondaryButton>
           </div>
         )}
 
-        <div className="mt-6 flex items-start gap-2 rounded-xl bg-muted/60 p-3 text-xs leading-relaxed text-muted-foreground">
-          <ShieldCheck size={17} className="mt-0.5 shrink-0 text-primary" />
+        <div className="mt-6 flex items-start gap-2 rounded-xl bg-[#F4F7F2] p-3 text-sm leading-relaxed text-[#53665a]">
+          <ShieldCheck aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-[#3E8E1F]" />
           <p>
             Jangan bagikan kode OTP kepada siapa pun. PANGANITA tidak akan
             meminta kode verifikasi Ibu melalui telepon.
           </p>
         </div>
 
-        <div className="mt-5 border-t border-border/70 pt-4">
-          <Link
-            href="/"
-            className="mx-auto flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-3 text-sm font-semibold text-[#1B4D2B] transition-colors duration-200 hover:bg-[#F1F7ED] hover:text-[#0F2D1A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F] focus-visible:ring-offset-2"
-          >
-            <ArrowLeft size={17} />
+        <div className="mt-5 border-t border-[#D5E2D2] pt-4">
+          <SecondaryButton href="/" lebarPenuh ikon={ArrowLeft} className="border-transparent shadow-none">
             Kembali ke Beranda
-          </Link>
+          </SecondaryButton>
         </div>
       </div>
     </main>
