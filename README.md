@@ -103,3 +103,9 @@ Dokumentasi Swagger API dapat diakses di `http://localhost:3000/api-docs`.
 - **Prawita Mepilianti**: AI RAG Chatbot Integration, Speech & Dialect Normalization, Swagger API Documentation, SQL Scripts & Seed Data, AI Technical Documentation.
 - **Dita Surya Kartika**: Supabase Storage Integration, WhatsApp OTP Authentication, Presentation Deck & Video Showcase.
 - **Dessy Christina Elseba Matakupan**: Product Requirement Document (PRD/BRD), User Story, User Flow, UI/UX Prototype, Registration Flow.
+
+---
+
+## 🎨 Kredit Aset Visual
+- **Foto landing page**: ["Woman sorting fish on a sandy coast"](https://pixabay.com/photos/fishing-village-people-one-outside-3248682/) oleh [pasja1000](https://pixabay.com/users/pasja1000-6355831/) dari [Pixabay](https://pixabay.com/), digunakan di bawah [Pixabay Content License](https://pixabay.com/service/license-summary/).
+- **Maskot Bu Nita & avatar Ibu**: dibuat dengan bantuan AI generatif menggunakan [ChatGPT](https://chatgpt.com/) (OpenAI), kemudian disesuaikan oleh tim PANGANITA.
