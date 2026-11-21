@@ -54,14 +54,42 @@ flowchart TD
 
 ---
 
-### 2.2 Computer Vision: Identifikasi Komoditas Panen Pekarangan
-Fitur pemindaian panen membantu ibu mengetahui klasifikasi pangan lokal yang dipanen:
-- **Tugas Visi**: Image Classification / Object Detection komoditas lokal (ikan lele, nila, ayam kampung, bayam, kangkung, tomat, singkong, ubi jalar).
-- **Pipeline Alur Produk**:
-  1. Pengguna memotret hasil panen melalui antarmuka kamera atau galeri di `/pindai`.
-  2. Gambar dianalisis untuk mendeteksi label kelas pangan (`nama_kelas_cv`).
-  3. Sistem melakukan *lookup* ke tabel master database `bahan_pangan` untuk mengambil data Berat Dapat Dimakan (BDD), energi kkal, dan protein per 100 gram.
-  4. Pengguna mengonfirmasi berat panen riil (kg), dan mesin kalkulasi PANGANITA menghitung 3 opsi keputusan: Prioritas Uang, Seimbang, dan Prioritas Gizi.
+### 2.2 Computer Vision: Pipeline Deteksi Komoditas Panen Pekarangan (YOLO)
+
+Fitur pemindaian panen pada platform PANGANITA dibangun menggunakan arsitektur **Object Detection berbasis YOLO (Ultralytics Framework)** yang berjalan di backend FastAPI dan terintegrasi secara mulus ke Next.js Route Handler.
+
+```mermaid
+flowchart TD
+    User([Ibu / Pengguna di /pindai]) -->|Kamera HP / Upload Foto| ClientUI[Halaman PindaiForm Next.js]
+    ClientUI -->|Multipart FormData max 8MB| NextAPI["Next.js Gateway (/api/vision/detect)"]
+    NextAPI -->|Upstream HTTP POST /detect| FastAPIService["FastAPI Service (Railway / Python Runtime)"]
+    FastAPIService --> ImgPreproc[OpenCV & NumPy Buffer Preprocessing]
+    ImgPreproc --> YOLOModel["Model YOLO (yolo26n_detect_v1 / best.pt)"]
+    YOLOModel --> PostProc[Bounding Box xyxy, Conf Score, Annotated Plot]
+    PostProc --> FastAPIService
+    FastAPIService -->|JSON Response & Annotated Image| NextAPI
+    NextAPI --> ClientUI
+    ClientUI --> DBCheck[(Lookup Nilai Gizi TKPI di Supabase bahan_pangan)]
+    DBCheck --> CalcEngine[Kalkulator Pembagian Panen Tumbuh1000]
+```
+
+#### Spesifikasi Model & Backend Vision:
+1. **Model Deep Learning**: Model **YOLO (You Only Look Once)** seri `yolo26n_detect_v1` (`best.pt`) hasil fine-tuning komoditas pangan lokal pekarangan Indonesia (ikan lele, nila, telur, bayam, kangkung, daun kelor, singkong, ubi jalar, pisang, tomat).
+2. **Parameter Inferensi**:
+   - `IMAGE_SIZE`: 640x640 piksel.
+   - `CONFIDENCE_THRESHOLD`: 0.25 (ambang batas keyakinan minimum untuk memfilter deteksi palsu).
+   - `Device`: CPU optimized execution via Ultralytics runtime.
+3. **Komponen Backend FastAPI (`backend/src/vision/`)**:
+   - `detector.py`: Memuat model secara *lazy loading* dengan proteksi thread lock (`_model_lock`), membaca buffer citra via OpenCV (`cv2.imdecode`), melakukan prediksi, dan menghasilkan gambar beranotasi bounding box (`result.plot()`) dalam format Base64 JPEG.
+   - `api.py`: Layanan microservice FastAPI dengan endpoint `POST /detect`, validasi format `UploadFile`, dan CORS middleware.
+   - `config.py`: Pengaturan dinamis path model dan parameter deteksi berbasis environment variables (`PANGANITA_YOLO_MODEL`, `YOLO_CONFIDENCE`).
+4. **Next.js Gateway Proxy (`app/api/vision/detect/route.js`)**:
+   - Berperan sebagai API Gateway aman: menyembunyikan URL internal FastAPI backend dari client.
+   - Validasi ketat ukuran file (maksimal 8 MB) dan tipe MIME yang diizinkan (`image/jpeg`, `image/png`, `image/webp`).
+   - Mencegah memory leak dan buffering tidak perlu menggunakan streaming upstream request.
+5. **Prinsip Human-in-the-Loop & Fallback**:
+   - Hasil deteksi otomatis mengisi form komoditas, namun ibu tetap memiliki kendali penuh (*human-in-the-loop*) untuk memverifikasi atau mengoreksi jenis komoditas serta memasukkan berat riil hasil timbangan (kg).
+   - Apabila foto buram atau objek tidak terdeteksi, sistem menyediakan fallback pilihan manual komoditas dari daftar bahan pangan pekarangan tanpa memutus alur pengguna.
 
 ---
 
@@ -79,6 +107,9 @@ Pengujian kualitas output Bu Nita AI dilakukan secara sistematis mencakup akuras
 | 4 | **Ketahanan Pangan Pekarangan** | "Panen kangkung saya 3 kg, keluarga ada 4 orang. Bagusnya dimakan semua atau dijual sebagian?" | Menghitung cadangan konsumsi harian keluarga dulu, surplusnya aman dijual untuk pemasukan kas keluarga. | Menyarankan konsumsi cukup untuk kebutuhan vitamin A & zat besi 3 hari ke depan, kelebihannya dapat dijual ke tetangga/pasar. | **LULUS** | 1.4s |
 | 5 | **Audio Voice Note (Suara)** | Input audio rekaman suara 5 detik menanyakan porsi telur untuk balita. | Audio berhasil ditranskripsikan ke kotak teks, jawaban audio dapat diputar kembali (*speech playback*). | Audio diproses jernih, transkripsi tepat 100%, jawaban Bu Nita muncul lengkap dengan kontrol pemutar suara. | **LULUS** | 2.1s |
 | 6 | **Out-of-Scope (Bukan Gizi)** | "Berapa ramalan skor pertandingan bola nanti malam?" | Menolak secara sopan karena di luar konteks gizi, ketahanan pangan, dan kesehatan keluarga. | "Mohon maaf Ibu, Bu Nita hanya dapat membantu seputar gizi keluarga, hasil panen pekarangan, dan kesehatan 1.000 HPK." | **LULUS** | 0.8s |
+| 7 | **CV: Deteksi Ikan Lele** | Foto 3 ekor ikan lele di ember pekarangan. | Bounding box lele terdeteksi, confidence score > 0.70, kalkulasi gizi otomatis terhubung. | Terdeteksi 3 objek 'ikan lele', kotak bounding box tepat, nilai protein TKPI lele (18.7g/100g) muncul otomatis. | **LULUS** | 1.8s |
+| 8 | **CV: Deteksi Sayur Bayam** | Foto seikat bayam segar di atas meja. | Terdeteksi kelas 'bayam', confidence score > 0.80. | Label 'bayam' terdeteksi, sistem menyajikan data zat besi 3.5mg dan BDD 71%. | **LULUS** | 1.6s |
+| 9 | **CV: Foto Buram / Non-Pangan** | Foto ruangan gelap atau objek bukan hasil panen. | Total objek 0, sistem menampilkan panduan foto ulang atau opsi pilih manual. | Deteksi 0 objek, UI mengarahkan pengguna ke dropdown pemilihan komoditas manual. | **LULUS** | 1.1s |
 
 ---
 
