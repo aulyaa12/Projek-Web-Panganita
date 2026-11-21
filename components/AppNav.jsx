@@ -51,11 +51,27 @@ export function AppNav() {
     });
   }
 
+  const isBuNita = pathname === "/bu-nita" || pathname.startsWith("/bu-nita/");
+
   return (
     <>
       {/* Navbar atas: tampil pada desktop dan mobile */}
-      <header className="sticky top-0 z-50 w-full px-3 sm:px-6">
-        <div className="mx-auto flex min-h-[76px] max-w-7xl items-center justify-between gap-3 rounded-full border border-[#e3ebe1] bg-white/95 px-4 shadow-[0_5px_25px_rgba(30,77,48,0.07)] backdrop-blur-xl sm:min-h-[92px] sm:px-7">
+      <header
+        className={cn(
+          "sticky top-0 z-50 w-full transition-all",
+          isBuNita
+            ? "border-b border-[#D8ECE0] bg-white px-3 py-2.5 shadow-sm sm:px-6"
+            : "px-3 pt-3 sm:px-6 sm:pt-4",
+        )}
+      >
+        <div
+          className={cn(
+            "mx-auto flex items-center justify-between gap-3",
+            isBuNita
+              ? "max-w-7xl"
+              : "min-h-[76px] max-w-7xl rounded-full border border-[#e3ebe1] bg-white/95 px-4 shadow-[0_5px_25px_rgba(30,77,48,0.07)] backdrop-blur-xl sm:min-h-[92px] sm:px-7",
+          )}
+        >
           <Link
             href="/"
             aria-label="Beranda PANGANITA"

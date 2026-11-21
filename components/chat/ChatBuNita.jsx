@@ -204,6 +204,7 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
 
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingSeconds, setLoadingSeconds] = useState(0);
   const [historyLoading, setHistoryLoading] = useState(true);
 
   const [listening, setListening] = useState(false);
@@ -246,6 +247,22 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
   useEffect(() => {
     setProfilLokasi(lokasi);
   }, [lokasi]);
+
+  // Timer loading untuk deteksi jaringan lambat / sinyal 3G
+  useEffect(() => {
+    let timer;
+    if (loading) {
+      setLoadingSeconds(0);
+      timer = setInterval(() => {
+        setLoadingSeconds((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setLoadingSeconds(0);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [loading]);
 
   // -----------------------------------------------
   // PESAN PEMBUKA
@@ -1114,13 +1131,11 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
   // -----------------------------------------------
 
   return (
-    <div className="text-[#0F2D1A]">
-      <div className="mx-auto w-full max-w-[850px] pb-28 lg:pb-16">
+    <main className="min-h-[calc(100dvh-70px)] bg-[#F4FCF7] text-[#173D30]">
+      <div className="mx-auto max-w-4xl px-2.5 pb-48 pt-3 sm:px-6 sm:pb-36 sm:pt-5">
         {/* PROFIL BU NITA */}
 
-        <section
-          className={`${KARTU} mb-5 flex items-center gap-3 px-4 py-4 sm:px-6`}
-        >
+        <section className="mb-4 flex items-center gap-3 rounded-2xl border border-[#D8ECE0] bg-white px-3.5 py-3 shadow-sm sm:mb-6 sm:px-6 sm:py-4">
           <NitaAvatar />
 
           <div className="min-w-0 flex-1">
@@ -1402,21 +1417,26 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
           {/* INDIKATOR LOADING */}
 
           {loading && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-2.5 sm:gap-3">
               <NitaAvatar small />
 
-              <div
-                role="status"
-                aria-live="polite"
-                className="flex items-center gap-2 rounded-2xl border border-[#D5E2D2] bg-white px-4 py-3 text-sm font-medium text-[#1B4D2B] shadow-sm"
-              >
-                <LoaderCircle
-                  aria-hidden="true"
-                  size={18}
-                  strokeWidth={2.5}
-                  className="animate-spin text-[#3E8E1F]"
-                />
-                Bu Nita sedang menyiapkan jawaban…
+              <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-[#D5EFE0] bg-white px-4 py-3 text-xs text-[#285741] shadow-sm">
+                <div className="flex items-center gap-2 font-medium">
+                  <LoaderCircle size={16} className="animate-spin text-[#1B4D2B]" />
+                  <span>Bu Nita sedang menyiapkan jawaban...</span>
+                </div>
+
+                {loadingSeconds >= 4 && (
+                  <div className="mt-2.5 border-t border-[#E3F2E9] pt-2 text-[11px] leading-relaxed text-[#4F7361] animate-in fade-in duration-300">
+                    <p className="flex items-center gap-1.5 font-semibold text-[#B45309]">
+                      <span className="inline-block h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                      Sedang memproses...
+                    </p>
+                    <p className="mt-0.5 text-[#5A6D63]">
+                      Mohon tunggu sebentar ya, Ibu. Pastikan sinyal dan koneksi internet Ibu tetap terhubung dengan baik.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1458,7 +1478,7 @@ export default function ChatBuNita({ namaIbu = '', lokasi = '' }) {
           sehingga tidak ada celah tempat tulisan lain terlihat saat digulir.
           Padding bawah menyisakan ruang untuk navigasi bawah. */}
 
-      <footer className="pointer-events-auto fixed inset-x-0 bottom-0 z-40 border-t border-[#D5E2D2] bg-white px-3 pb-[calc(env(safe-area-inset-bottom,0px)+100px)] pt-3 sm:px-6 sm:pt-4 lg:pb-4">
+      <footer className="pointer-events-auto fixed inset-x-0 bottom-[64px] z-40 border-t border-[#D0EBDD] bg-white px-2.5 py-2.5 shadow-[0_-4px_20px_rgba(23,61,48,0.06)] sm:bottom-[72px] sm:px-6 sm:py-3.5 lg:bottom-0">
         {listening && (
           <div className="mx-auto mb-2 flex max-w-[850px] items-center justify-between rounded-xl border border-red-200 bg-red-50 px-3.5 py-1.5 text-sm text-red-700">
             <div className="flex items-center gap-2 font-semibold">
