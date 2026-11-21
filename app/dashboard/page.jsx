@@ -80,7 +80,7 @@ export default async function Beranda() {
     : "Belum ada";
 
   return (
-    <div className="w-full space-y-7 sm:space-y-9">
+    <div className="-mt-2 w-full space-y-7 sm:space-y-9">
       {/* ======================================
           KEPALA HALAMAN
       ====================================== */}

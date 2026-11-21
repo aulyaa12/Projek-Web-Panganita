@@ -501,6 +501,7 @@ export function PindaiForm({ bahan }) {
 
   // Mengirim foto ke API Next.js, lalu diteruskan ke FastAPI.
   // AbortController mencegah hasil deteksi foto lama menimpa foto terbaru.
+
   async function jalankanDeteksi() {
     if (!fileFoto) {
       tampilkanPopup(
@@ -513,6 +514,7 @@ export function PindaiForm({ bahan }) {
     if (deteksiControllerRef.current) return;
 
     setPopup(null);
+
     const controller = new AbortController();
     deteksiControllerRef.current = controller;
 
@@ -542,16 +544,36 @@ export function PindaiForm({ bahan }) {
         );
       }
 
-      // Abaikan respons jika permintaan sudah diganti/dibatalkan.
       if (deteksiControllerRef.current !== controller) return;
 
       setHasilDeteksi(data);
 
-      // Pencocokan kelas AI dengan katalog Supabase.
-      const ditemukan = cocokkanPangan(data.counts, bahan);
+      // Backend menentukan kelas dominan.
+      const dominantClass = data.identification?.dominant_class;
+
+      if (!data.identification?.success || !dominantClass) {
+        tampilkanPopup(
+          "error",
+          "Sistem belum dapat menentukan jenis pangan secara meyakinkan.",
+          {
+            title: "Pilih pangan secara manual",
+            duration: 0,
+            actionLabel: "Pilih Pangan",
+          },
+        );
+        return;
+      }
+
+      // Cocokkan nama kelas YOLO dengan katalog pangan.
+      const ditemukan = bahan.find(
+        (item) =>
+          normalisasiLabel(item.nama_kelas_cv) ===
+          normalisasiLabel(dominantClass),
+      );
 
       if (ditemukan) {
         pilihBahan(ditemukan);
+
         tampilkanPopup(
           "success",
           "Sistem berhasil mengenali pangan pada foto.",
@@ -561,8 +583,8 @@ export function PindaiForm({ bahan }) {
           },
         );
       } else {
-        tampilkanPopup("error", "Silakan pilih jenis pangan secara manual.", {
-          title: "Pangan belum terdeteksi",
+        tampilkanPopup("error", "Jenis pangan belum tersedia dalam katalog.", {
+          title: "Pilih pangan secara manual",
           duration: 0,
           actionLabel: "Pilih Pangan",
         });
@@ -570,6 +592,7 @@ export function PindaiForm({ bahan }) {
     } catch (error) {
       if (error?.name !== "AbortError") {
         console.error("[DETEKSI PANGAN]", error);
+
         tampilkanPopup("error", "Silakan pilih jenis pangan secara manual.", {
           title: "Pangan belum terdeteksi",
           duration: 0,
@@ -630,18 +653,17 @@ export function PindaiForm({ bahan }) {
       return null;
     }
 
-    const hargaPerKg = Number(harga.replace(/[^\d]/g, ""));
+    // Harga disimpan sebagai digit murni di state.
+    const hargaPerKg = Number(String(harga).replace(/[^\d]/g, ""));
 
     if (!Number.isFinite(hargaPerKg) || harga.trim() === "") {
       tampilkanPopup("error", "Masukkan harga pasar per kilogram.");
       return null;
     }
 
-    if (
-      !Number.isInteger(Number(hari)) ||
-      Number(hari) < 1 ||
-      Number(hari) > 30
-    ) {
+    const hariValid = Number(hari);
+
+    if (!Number.isInteger(hariValid) || hariValid < 1 || hariValid > 30) {
       tampilkanPopup("error", "Lama cadangan harus antara 1 sampai 30 hari.");
       return null;
     }
@@ -650,7 +672,7 @@ export function PindaiForm({ bahan }) {
       bahanId: panganTerpilih.id,
       beratPanenKg: beratKg,
       hargaJualPerKg: hargaPerKg,
-      hariDisediakan: Number(hari),
+      hariDisediakan: hariValid,
     };
   }
 
@@ -1032,7 +1054,7 @@ export function PindaiForm({ bahan }) {
                         </div>
                         <div>
                           <h4 className="text-sm font-bold tabular-nums text-[#0F2D1A]">
-                            Hasil analisis AI
+                            Hasil Analisis AI
                           </h4>
                           <p className="mt-0.5 text-xs text-slate-600">
                             Visualisasi area pangan yang dikenali sistem.
@@ -1473,7 +1495,7 @@ export function PindaiForm({ bahan }) {
                 </div>
 
                 <h2 className="text-2xl font-bold tracking-tight text-[#0F2D1A] sm:text-3xl">
-                  Pilih Pembagian Panen
+                  Pilih Pembagian Panen Tumbuh100
                 </h2>
 
                 <p className="mt-2 max-w-2xl text-base font-medium leading-relaxed text-[#1B4D2B]">

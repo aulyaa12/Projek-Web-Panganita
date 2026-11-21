@@ -84,7 +84,7 @@ export default async function HalamanRiwayat() {
   }
 
   return (
-    <main className="min-h-[calc(100dvh-20rem)] space-y-6 pb-8 sm:min-h-[calc(100dvh-17rem)]">
+    <main className="-mt-2 min-h-[calc(100dvh-20rem)] space-y-6 pb-8 sm:min-h-[calc(100dvh-17rem)]">
       {/* HEADER */}
       <header className="space-y-4">
         <h1 className="text-center text-3xl font-bold tracking-tight text-[#0F2D1A]">

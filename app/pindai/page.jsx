@@ -22,7 +22,7 @@ export default async function HalamanPindai() {
 
   return (
     <main className="min-h-screen w-full bg-slate-50">
-      <div className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-10">
+      <div className="mx-auto w-full max-w-[1440px] px-4 pt-3 pb-6 sm:px-6 lg:px-10">
         {bahan.length === 0 ? (
           <section className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">

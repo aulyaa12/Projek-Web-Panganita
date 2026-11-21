@@ -61,7 +61,7 @@ export function AppNav() {
           "sticky top-0 z-50 w-full transition-all",
           isBuNita
             ? "border-b border-[#D8ECE0] bg-white px-3 py-2.5 shadow-sm sm:px-6"
-            : "px-3 pt-3 sm:px-6 sm:pt-4",
+            : "px-3 sm:px-6 ",
         )}
       >
         <div

@@ -1,3 +1,4 @@
+
 import { muatProfilSaya } from "@/lib/data/referensi";
 import { ProfilForm } from "@/components/ProfilForm";
 
@@ -5,16 +6,22 @@ export default async function HalamanKeluarga() {
   const profil = await muatProfilSaya();
 
   return (
-    <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <main className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 pt-1 pb-6 space-y-6">
       <header>
-        <p className="text-sm text-stone-600">Profil keluarga</p>
+        <p className="text-sm text-stone-600">
+          Profil keluarga
+        </p>
+
         <h1 className="text-2xl font-bold text-emerald-950">
           {profil ? "Keluarga Ibu" : "Kenali keluarga Ibu"}
         </h1>
+
         <p className="mt-2 text-stone-600">
-          Informasi ini membantu PANGANITA menghitung kebutuhan pangan keluarga. Nama anak tidak perlu diisi.
+          Informasi ini membantu PANGANITA menghitung kebutuhan
+          pangan keluarga. Nama anak tidak perlu diisi.
         </p>
       </header>
+
       <ProfilForm awal={profil} />
     </main>
   );
