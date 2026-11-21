@@ -58,6 +58,7 @@ export function NavKondisional({ children }) {
 
   // Cabang 2: halaman aplikasi (AppNav, ada bottom navbar sampai lg)
   const isDashboard = pathname === "/dashboard";
+  const isBuNita = pathname === "/bu-nita" || pathname.startsWith("/bu-nita/");
 
   return (
     <>
@@ -65,10 +66,12 @@ export function NavKondisional({ children }) {
 
       <main
         className={cn(
-          "mx-auto w-full px-4 pb-28 pt-6 lg:pb-12",
-          isDashboard
-            ? "max-w-7xl pt-8 sm:px-6 lg:px-8"
-            : "max-w-4xl",
+          isBuNita
+            ? "mx-auto w-full max-w-5xl px-2 pb-0 pt-2 sm:px-4 sm:pt-4"
+            : cn(
+                "mx-auto w-full px-4 pb-28 pt-6 lg:pb-12",
+                isDashboard ? "max-w-7xl pt-8 sm:px-6 lg:px-8" : "max-w-4xl",
+              ),
         )}
       >
         {children}
