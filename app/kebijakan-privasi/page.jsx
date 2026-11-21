@@ -54,7 +54,7 @@ const BAGIAN = [
         <DaftarPoin>
           <li>
             <strong>Pindai Panen:</strong> foto panen yang Ibu unggah
-            (JPEG, PNG, atau WEBP, maksimal 10 MB), jenis bahan pangan yang
+            (JPEG, PNG, atau WEBP, maksimal 8 MB), jenis bahan pangan yang
             terdeteksi, dan tingkat keyakinan hasil deteksinya.
           </li>
           <li>
