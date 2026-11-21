@@ -16,9 +16,6 @@ export default async function HalamanBuNita() {
     .filter(Boolean)
     .join(", ");
 
-  return (
-    <main className="min-h-screen">
-      <ChatBuNita namaIbu={profil.nama_ibu} lokasi={lokasi} />
-    </main>
-  );
+  // <main> sudah disediakan NavKondisional, jadi tidak dibungkus <main> lagi.
+  return <ChatBuNita namaIbu={profil.nama_ibu} lokasi={lokasi} />;
 }
