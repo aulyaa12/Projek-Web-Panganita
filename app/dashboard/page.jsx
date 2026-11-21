@@ -70,7 +70,7 @@ export default async function Beranda() {
     .from("riwayat_keputusan")
     .select("id", { count: "exact", head: true });
 
-  const terakhir = (data ?? []);
+  const terakhir = data ?? [];
 
   const totalAnggota = jumlahOrangProfil(profil);
   const totalKeputusan = count ?? 0;
@@ -93,10 +93,7 @@ export default async function Beranda() {
             aria-label="Buka profil keluarga"
             className="block shrink-0 rounded-[24px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3E8E1F] focus-visible:ring-offset-2 active:scale-95"
           >
-            <AvatarProfil
-              bisaUbah={false}
-              ukuran="h-16 w-16 sm:h-20 sm:w-20"
-            />
+            <AvatarProfil bisaUbah={false} ukuran="h-16 w-16 sm:h-20 sm:w-20" />
           </Link>
 
           <div className="min-w-0 space-y-1">
@@ -110,17 +107,6 @@ export default async function Beranda() {
               Selamat datang kembali, Ibu {profil.nama_ibu}.
             </p>
           </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <SecondaryButton href="/riwayat" ikon={History} className="min-h-14">
-            Riwayat
-          </SecondaryButton>
-
-          <PrimaryButton href="/pindai" ikon={Camera}>
-            Pindai Panen
-            <ArrowRight aria-hidden="true" className="h-5 w-5 shrink-0" />
-          </PrimaryButton>
         </div>
       </header>
 
@@ -286,7 +272,7 @@ export default async function Beranda() {
           BAGIAN UTAMA
       ====================================== */}
 
-      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
+      <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         {/* CATATAN PANEN */}
         <section className="min-w-0 space-y-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -482,9 +468,11 @@ export default async function Beranda() {
         </section>
 
         {/* KOLOM KANAN */}
-        <aside className="space-y-5">
+        <aside className="flex min-w-0">
           {/* JALAN PINTAS */}
-          <section className={`${KARTU} p-5 sm:p-6`}>
+          <section
+            className={`${KARTU} flex h-full w-full flex-col p-5 sm:p-6`}
+          >
             <div>
               <p className={EYEBROW}>Jalan pintas</p>
 
@@ -520,76 +508,69 @@ export default async function Beranda() {
               />
             </div>
           </section>
-
-          {/* MISI PANGANITA */}
-          <section className="relative overflow-hidden rounded-2xl border border-[#D5E2D2] bg-[#F4F7F2] p-5 sm:p-6">
-            <div className="relative z-10">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1B4D2B] text-[#FFD23F]">
-                <Sprout aria-hidden="true" className="h-6 w-6" />
-              </div>
-
-              <p className="mt-4 text-xs font-extrabold uppercase tracking-wider text-[#1B4D2B]">
-                MISI PANGANITA
-              </p>
-
-              <h2 className="mt-2 text-xl font-extrabold leading-snug text-[#0F2D1A]">
-                Panen yang dikelola dengan bijak, keluarga yang lebih terjaga.
-              </h2>
-
-              <p className="mt-3 text-sm leading-relaxed text-[#53665a]">
-                Pertimbangkan kebutuhan pangan keluarga sebelum menentukan hasil
-                panen yang akan dijual.
-              </p>
-
-              <SecondaryButton
-                href="/pindai"
-                ikon={ScanLine}
-                lebarPenuh
-                className="mt-5"
-              >
-                Pindai hasil panen
-              </SecondaryButton>
-            </div>
-
-            <div
-              aria-hidden="true"
-              className="absolute -bottom-16 -right-16 h-40 w-40 rounded-full border-[24px] border-[#90C226]/25"
-            />
-          </section>
         </aside>
       </div>
 
       {/* ======================================
-          PENGINGAT DI BAWAH
+          PENGINGAT KELUARGA & MISI PANGANITA
+          Desktop: dua kartu berdampingan agar seimbang.
+          Mobile: kartu ditampilkan bertumpuk.
       ====================================== */}
 
-      <section
-        className={`${KARTU} flex flex-col justify-between gap-4 p-5 sm:flex-row sm:items-center sm:p-6`}
-      >
-        <div className="flex items-start gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EAF1E8] text-[#1B4D2B]">
-            <Users aria-hidden="true" className="h-5 w-5" />
+      <section className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-2">
+        {/* PENGINGAT KELUARGA — POSISI KIRI */}
+        <section
+          className={`${KARTU} flex h-full min-h-[190px] flex-col gap-5 p-5 sm:p-6`}
+        >
+          <div className="flex items-start gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#EAF1E8] text-[#1B4D2B]">
+              <Users aria-hidden="true" className="h-5 w-5" />
+            </div>
+
+            <div className="min-w-0">
+              <h3 className="font-bold text-[#0F2D1A]">
+                Pastikan informasi keluarga selalu diperbarui
+              </h3>
+
+              <p className="mt-2 text-sm leading-relaxed text-[#53665a]">
+                Perubahan jumlah anggota, kondisi kehamilan, dan menyusui dapat
+                memengaruhi perhitungan kebutuhan gizi keluarga.
+              </p>
+            </div>
           </div>
 
-          <div>
-            <h3 className="font-bold text-[#0F2D1A]">
-              Pastikan informasi keluarga selalu diperbarui
-            </h3>
+          <SecondaryButton href="/keluarga" className="mt-auto w-full sm:w-fit">
+            Perbarui profil
+            <ArrowRight aria-hidden="true" className="h-5 w-5 shrink-0" />
+          </SecondaryButton>
+        </section>
 
-            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[#53665a]">
-              Perubahan jumlah anggota, kondisi kehamilan, dan menyusui dapat
-              memengaruhi perhitungan kebutuhan gizi keluarga.
+        {/* MISI PANGANITA — POSISI KANAN */}
+        <section className="relative flex h-full min-h-[190px] flex-col overflow-hidden rounded-2xl border border-[#D5E2D2] bg-[#F4F7F2] p-5 sm:p-6">
+          <div className="relative z-10 max-w-xl">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1B4D2B] text-[#FFD23F]">
+              <Sprout aria-hidden="true" className="h-6 w-6" />
+            </div>
+
+            <p className="mt-4 text-xs font-extrabold uppercase tracking-wider text-[#1B4D2B]">
+              MISI PANGANITA
+            </p>
+
+            <h2 className="mt-2 text-xl font-extrabold leading-snug text-[#0F2D1A]">
+              Panen yang dikelola dengan bijak, keluarga yang lebih terjaga.
+            </h2>
+
+            <p className="mt-3 text-sm leading-relaxed text-[#53665a]">
+              Pertimbangkan kebutuhan pangan keluarga sebelum menentukan hasil
+              panen yang akan dijual.
             </p>
           </div>
-        </div>
 
-        <SecondaryButton
-          href="/keluarga"
-          className="w-full shrink-0 sm:w-auto"
-        >
-          Perbarui profil
-          <ArrowRight aria-hidden="true" className="h-5 w-5 shrink-0" />
-        </SecondaryButton>
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -bottom-16 -right-16 h-40 w-40 rounded-full border-[24px] border-[#90C226]/25"
+          />
+        </section>
       </section>
     </div>
   );
@@ -646,13 +627,7 @@ function KartuAngka({
   );
 }
 
-function LangkahAlur({
-  nomor,
-  judul,
-  keterangan,
-  ikon,
-  terakhir = false,
-}) {
+function LangkahAlur({ nomor, judul, keterangan, ikon, terakhir = false }) {
   return (
     <div className="relative flex gap-3">
       {!terakhir && (
@@ -683,12 +658,7 @@ function LangkahAlur({
   );
 }
 
-function TautanMenu({
-  href,
-  ikon,
-  judul,
-  keterangan,
-}) {
+function TautanMenu({ href, ikon, judul, keterangan }) {
   return (
     <Link
       href={href}

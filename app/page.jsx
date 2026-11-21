@@ -54,7 +54,7 @@ const FITUR = [
   {
     nama: "Pindai Panen",
     ikon: Camera,
-    kalimat: "Cukup foto hasil panen, tanpa mengetik.",
+    kalimat: "Cukup foto hasil panen, biarkan AI bekerja.",
     isi: "Panganita mengenali 15 jenis pangan lokal: ikan dan udang, sayur, buah, pangan pokok, dan telur. Lalu Ibu mengisi berat dan harga, dan Panganita menghitung berapa yang disimpan untuk keluarga dan berapa yang dijual.",
     contoh: "Contoh: 2 kg ikan lele, simpan 0,5 kg untuk balita, jual 1,5 kg.",
     utama: true,
@@ -68,12 +68,26 @@ const FITUR = [
     utama: false,
   },
   {
-    nama: "Bu Nita",
+        nama: "Bu Nita",
     ikon: MessageCircle,
     kalimat: "Teman bertanya soal gizi dan resep.",
-    isi: "Tanyakan ide olahan pangan lokal atau gizi anak lewat suara maupun tulisan. Jawaban Bu Nita menyebut rujukan dari buku panduan dan Tabel Komposisi Pangan Indonesia Kementerian Kesehatan.",
+    isi: (
+      <>
+        Tanyakan ide olahan pangan lokal atau gizi anak lewat suara maupun tulisan. Jawaban Bu Nita berdasarkan{" "}
+        <a
+          href="https://panganita.vercel.app/docs/buku_panduan_gizi_dan_olahan_panganita.pdf"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-blue-600 hover:text-blue-800 font-medium"
+        >
+          rujukan
+        </a>{" "}
+        yang telah dihimpun oleh Tim Panganita.
+      </>
+    ),
     contoh: "Contoh: “Panen tomat 5 kg untuk 3 hari, saran jual berapa kg?”",
     utama: false,
+
   },
 ];
 
@@ -224,8 +238,9 @@ export default function LandingPage() {
                   aria-hidden="true"
                   className="mt-0.5 h-5 w-5 shrink-0 text-[#90C226]"
                 />
-                Tanpa kata sandi. Untuk ibu produsen pangan dengan anak usia
-                1.000 hari pertama.
+                Masuk langsung tanpa kata sandi. Untuk ibu yang terutama
+                bekerja di bidang pangan, seperti petani dan nelayan, dengan anak usia
+                1.000 Hari Pertama Kehidupan (HPK).
               </p>
             </div>
 
@@ -253,7 +268,7 @@ export default function LandingPage() {
               <p className="relative z-10 -mt-6 mx-4 rounded-2xl bg-white p-4 text-[#0F2D1A] shadow-lg">
                 <span className="block text-lg font-bold">Bu Nita</span>
                 <span className="text-base text-[#3d5044]">
-                  Penyuluh gizi yang siap menemani Ibu bertanya.
+                  Asisten gizi yang siap menemani Ibu bertanya.
                 </span>
               </p>
             </div>
@@ -269,7 +284,8 @@ export default function LandingPage() {
         <JudulBagian
           id="judul-masalah"
           judul="Panen berlimpah, tetapi gizi anak sering tersisih."
-          pengantar="Di banyak desa pesisir, ikan dan udang terbaik dijual semua. Uangnya dipakai membeli pangan praktis seperti mi instan, sehingga protein untuk anak berkurang."
+          pengantar="Di banyak desa pesisir, ikan dan udang terbaik dijual semua. 
+          Uangnya dipakai membeli pangan praktis seperti mi instan, sehingga protein untuk anak berkurang."
         />
 
         <div className="mt-10 grid items-stretch gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -307,7 +323,7 @@ export default function LandingPage() {
 
         <p className="mt-8 max-w-3xl text-xl font-semibold leading-relaxed text-[#1B4D2B]">
           Panganita mengajak Ibu menyisihkan sebelum menjual: sebagian untuk
-          gizi anak dan Ibu, sebagian tetap dijual untuk kebutuhan keluarga.
+          memenuhi gizi keluarga, sebagian tetap dijual untuk kebutuhan sehari-hari.
         </p>
       </section>
 

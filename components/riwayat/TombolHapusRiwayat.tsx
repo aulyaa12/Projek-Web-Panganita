@@ -34,7 +34,7 @@ export function TombolHapusRiwayat({ action, tampilkanTombol }: Props) {
       type: "warning",
       title: "Hapus semua riwayat?",
       message:
-        "Seluruh riwayat keputusan panen akan dihapus permanen. Data panen dan foto tidak akan ikut dihapus.",
+        "Seluruh riwayat keputusan panen akan dihapus permanen.",
     });
   }
 

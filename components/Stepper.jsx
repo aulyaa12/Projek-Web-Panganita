@@ -1,15 +1,8 @@
 import { Button } from "@/components/ui/button";
 
-type Props = {
-  nilai: number;
-  onChange: (n: number) => void;
-  label: string;
-  maks?: number;
-};
-
-export function Stepper({ nilai, onChange, label, maks = 20 }: Props) {
+export function Stepper({ nilai, onChange, label, maks = 20 }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex shrink-0 items-center justify-end gap-3">
       <Button
         type="button"
         variant="outline"
@@ -20,7 +13,11 @@ export function Stepper({ nilai, onChange, label, maks = 20 }: Props) {
       >
         −
       </Button>
-      <span className="w-8 text-center text-lg font-semibold tabular-nums">{nilai}</span>
+
+      <span className="w-8 text-center text-lg font-semibold tabular-nums">
+        {nilai}
+      </span>
+
       <Button
         type="button"
         variant="outline"
@@ -34,3 +31,5 @@ export function Stepper({ nilai, onChange, label, maks = 20 }: Props) {
     </div>
   );
 }
+
+export default Stepper;

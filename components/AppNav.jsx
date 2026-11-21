@@ -174,7 +174,10 @@ export function AppNav() {
                           : "bg-[#E6B91E] shadow-[0_10px_22px_rgba(230,185,30,0.42)] group-hover:brightness-105",
                       )}
                     >
-                      <Icon aria-hidden="true" className="h-7 w-7 stroke-[2.1]" />
+                      <Icon
+                        aria-hidden="true"
+                        className="h-7 w-7 stroke-[2.1]"
+                      />
                     </span>
                     <span
                       className={cn(
