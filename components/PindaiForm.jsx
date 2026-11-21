@@ -864,7 +864,7 @@ export function PindaiForm({ bahan }) {
           <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
             <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#1B4D2B]">
               <Sprout size={16} />
-              PANGANITA SMART HARVEST
+              PINDAI PANEN PANGANITA
             </div>
 
             <h2 className="text-xl font-bold tracking-tight text-[#0F2D1A] sm:text-2xl">

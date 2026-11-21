@@ -49,5 +49,4 @@ Restart `npm run dev` setelah mengubah environment variable.
 - API menerima satu foto pada field `file` (JPG, PNG, WebP; maksimal 8 MB).
 - API mengembalikan `detections`, `counts`, `total_objects`, dan `annotated_image`.
 - Model dijalankan pada CPU (`device="cpu"`).
-- Tahap ini belum menyimpan foto atau hasil deteksi ke Supabase.
 - Deteksi hanya usulan awal. Pengguna tetap perlu mengonfirmasi kelas dan jumlah objek.
