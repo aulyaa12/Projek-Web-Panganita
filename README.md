@@ -1,6 +1,6 @@
 # PANGANITA (Pangan dan Gizi untuk Keluarga)
 
-> **Solusi pendukung pengelolaan hasil panen, ketahanan pangan, dan pemenuhan gizi keluarga 100 HPK berbasis AI.**
+> **Solusi pendukung pengelolaan hasil panen, ketahanan pangan, dan pemenuhan gizi keluarga 1.000 HPK berbasis AI.**
 >
 > Final Project — Bootcamp Perempuan Inovasi GENerasi AI 2026 (Track: AI Full-Stack Web Development)
 
@@ -24,7 +24,7 @@ Fitur utama:
 
 1. **Pindai Panen (Computer Vision).** Pengguna mengunggah atau memotret pangan. **YOLO26n-seg PANGANITA V1** mengenali kategori pangan, menghasilkan segmentasi objek, dan memilih kelas dominan apabila memenuhi aturan sistem. Nama pangan dapat dikoreksi secara manual. Informasi gizi berasal dari katalog pangan di Supabase, bukan dihitung langsung oleh YOLO.
 2. **Kalkulator Keputusan Panen (Tumbuh1000).** Menampilkan tiga alternatif pembagian hasil panen: **Prioritas Gizi, Seimbang, dan Prioritas Uang**, berdasarkan parameter kebutuhan pangan keluarga, data gizi, jumlah panen, dan harga. Hasilnya merupakan estimasi pendukung keputusan, bukan kepastian terpenuhinya seluruh kebutuhan gizi. Pilihan Ibu tersimpan sebagai riwayat.
-3. **Bu Nita AI **(RAG & Voice Note)**.** Asisten percakapan terkait pangan dan gizi yang menggunakan materi rujukan/RAG. Asisten gizi interaktif yang ramah dialek daerah (Jawa, Sunda, Betawi, Melayu), mendukung masukan suara, dan menampilkan rujukan buku panduan resmi.
+3. **Bu Nita AI (RAG & Voice Note).** Asisten percakapan terkait pangan dan gizi yang menggunakan materi rujukan/RAG. Asisten gizi interaktif yang ramah dialek daerah (Jawa, Sunda, Betawi, Melayu), mendukung masukan suara, dan menampilkan rujukan buku panduan resmi.
 4. **Autentikasi WhatsApp OTP.** Login melalui verifikasi kode OTP, tanpa kata sandi panjang.
 5. **Profil dan Riwayat.** Menyimpan informasi keluarga dan riwayat keputusan panen sesuai hak akses pengguna.
 
@@ -38,7 +38,7 @@ Fitur utama:
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | Dokumentasi API aplikasi | [`/api-docs`](https://panganita.vercel.app/api-docs) / [`app/api/openapi.json/route.js`](https://github.com/aulyaa12/Projek-Web-Panganita/blob/main/app/api/openapi.json/route.js) | Swagger/OpenAPI untuk endpoint aplikasi Next.js                                                |
 | Swagger Vision AI        | [Railway `/docs`](https://projek-web-panganita-production.up.railway.app/docs)                                                                                                      | Pengujian langsung `POST /detect` dan `GET /health`                                        |
-| Dokumentasi fitur AI     | [`docs/DOKUMENTASI_FITUR_AI.md`](./docs/DOKUMENTASI_FITUR_AI.md)                                                                                                                    | Penjelasan piline Vision AI, chatbot, dan evaluasi                                            |
+| Dokumentasi fitur AI     | [`docs/DOKUMENTASI_FITUR_AI.md`](./docs/DOKUMENTASI_FITUR_AI.md)                                                                                                                    | Penjelasan pipeline Vision AI, chatbot, dan evaluasi                                            |
 | Panduan Vision API       | [`backend/README-INTEGRASI.md`](./backend/README-INTEGRASI.md)                                                                                                                      | Konfigurasi dan cara menjalankan FastAPI                                                       |
 | Referensi gizi RAG       | [`docs/buku_panduan_gizi_dan_olahan_panganita.pdf`](./docs/buku_panduan_gizi_dan_olahan_panganita.pdf)                                                                              | Dokumen rujukan basis pengetahuan (knowledge base) Bu Nita AI.                                 |
 | Dokumentasi database     | [`database/README.md`](./database/README.md)                                                                                                                                        | Panduan inisialisasi database, ERD (Mermaid), dan penjelasan RLS.                              |
@@ -52,7 +52,7 @@ Fitur utama:
 - **Backend aplikasi:** Next.js Server Actions dan Route Handlers.
 - **Vision API:** Python, FastAPI, Ultralytics **YOLO26n-seg PANGANITA V1**, OpenCV, NumPy, PyTorch; inferensi CPU.
 - **Database dan Storage:** Supabase PostgreSQL, Authentication, dan Storage (`hasil-panen`).
-- **Chatbot:** Integrasi model bahasa Google Gemini  Google Gemini 3.5 Flash dengan failover berlapis (`gemini-3.5-flash`, `gemini-3.1-flash-lite-preview`, `gemini-3-flash-preview`, `gemini-flash-latest`, `gemini-flash-lite-latest`) dan basis pengetahuan/RAG sesuai konfigurasi implementasi chatbot.
+- **Chatbot:** Integrasi model bahasa Google Gemini 3.5 Flash dengan failover berlapis (`gemini-3.5-flash`, `gemini-3.1-flash-lite-preview`, `gemini-3-flash-preview`, `gemini-flash-latest`, `gemini-flash-lite-latest`) dan basis pengetahuan/RAG sesuai konfigurasi implementasi chatbot.
 
 * **Dialect Normalization & Timezone Sync** : Penerjemahan kosakata daerah dan penyesuaian zona waktu (WIB/WITA/WIT).
 * **Speech-to-Text** : Masukan suara (voice note) dikirim sebagai audio base64 dan ditranskripsi menjadi teks.
@@ -75,11 +75,11 @@ flowchart LR
 
 ## 🚀 Cara Menjalankan Aplikasi di Lokal (Local Development)
 
-### 1. Prasyaratan
+### 1. Prasyarat
 
 - Node.js versi 18+ (disarankan v20 atau v22)
 - Python 3.12 (untuk menjalankan Vision AI lokal)
-- Akses Supabase,  API key Gemini dan Fonnte untuk fitur terkait
+- Akses Supabase, API key Gemini dan Fonnte untuk fitur terkait
 - Model YOLO26n-seg `best.pt` (untuk menjalankan Vision AI lokal)
 
 ### 2. Clone Repository & Instalasi Dependensi
@@ -110,7 +110,7 @@ FONNTE_TOKEN=your-fonnte-token
 
 # Layanan Computer Vision (FastAPI)
 # Lokal: http://127.0.0.1:8000 | Production: alamat layanan di Railway
-PANGANITA_VISION_API_URL=http://127.0.0.1:8000
+PANGANITA_VISION_API_URL=https://projek-web-panganita-production.up.railway.app
 ```
 
 > File `.env.local`, dataset, dan file model berukuran besar **tidak** di-commit ke repository.
@@ -135,7 +135,7 @@ Dari **root proyek**, instal dependensi Python:
 
 ```powershell
 py -3.12 -m venv backend\.venv
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\backend\.venv\Scripts\Activate.ps1
 python -m pip install -r backend\requirements.txt
 ```
