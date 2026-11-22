@@ -1495,7 +1495,7 @@ export function PindaiForm({ bahan }) {
                 </div>
 
                 <h2 className="text-2xl font-bold tracking-tight text-[#0F2D1A] sm:text-3xl">
-                  Pilih Pembagian Panen Tumbuh100
+                  Pilih Pembagian Panen Tumbuh1000
                 </h2>
 
                 <p className="mt-2 max-w-2xl text-base font-medium leading-relaxed text-[#1B4D2B]">
