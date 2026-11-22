@@ -1,17 +1,7 @@
-''' Milik Model yolo_detech_v1 (Model lama)
-fastapi>=0.115,<1.0
-uvicorn[standard]>=0.30,<1.0
-python-multipart>=0.0.9
-ultralytics>=8.4.0
-opencv-python-headless>=4.10
-numpy>=1.26 '''
 
-#Model terbaru yg digunakan (Yolo26n-seg-v1)
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 python-multipart>=0.0.9
 ultralytics==8.4.216
 opencv-python-headless>=4.10.0
 numpy>=1.26.0
-
-
